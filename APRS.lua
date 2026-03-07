@@ -394,6 +394,97 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 		return aprs_packet_compare(self.Handle, packet.Handle) and true or false;
 	end
 
+	function packet:ToGPS()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_GPS then
+			return nil;
+		end
+
+		return APRS.Packet.GPS.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToItem()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_ITEM then
+			return nil;
+		end
+
+		return APRS.Packet.Item.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToObject()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_OBJECT then
+			return nil;
+		end
+
+		return APRS.Packet.Object.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToStatus()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_STATUS then
+			return nil;
+		end
+
+		return APRS.Packet.Status.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToMessage()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_MESSAGE then
+			return nil;
+		end
+
+		return APRS.Packet.Message.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToWeather()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_WEATHER then
+			return nil;
+		end
+
+		return APRS.Packet.Weather.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToPosition()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_POSITION then
+			return nil;
+		end
+
+		return APRS.Packet.Position.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToTelemetry()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_TELEMETRY then
+			return nil;
+		end
+
+		return APRS.Packet.Telemetry.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToThirdParty()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_THIRD_PARTY then
+			return nil;
+		end
+
+		return APRS.Packet.ThirdParty.InitFromHandle(self.Handle, read_only, false);
+	end
+	function packet:ToUserDefined()
+		local type = self:GetType();
+
+		if type ~= APRS.PACKET_TYPE_USER_DEFINED then
+			return nil;
+		end
+
+		return APRS.Packet.UserDefined.InitFromHandle(self.Handle, read_only, false);
+	end
+
 	function packet:ToString()
 		local value = aprs_packet_to_string(self.Handle);
 
