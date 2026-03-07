@@ -539,10 +539,80 @@ function APRS.Packet.Item.InitFromHandle(handle, read_only, take_ownership)
 		end
 	});
 
-	-- TODO: implement
+	function item:IsAlive()
+		return aprs_packet_item_is_alive(self.Handle) and true or false;
+	end
+	function item:IsCompressed()
+		return aprs_packet_item_is_compressed(self.Handle) and true or false;
+	end
+
+	function item:GetName()
+		local value = aprs_packet_item_get_name(self.Handle);
+
+		return tostring(value);
+	end
+	-- @return symbol_table, symbol_table_key
+	function item:GetSymbol()
+		local symbol_table     = aprs_packet_item_get_symbol_table(self.Handle);
+		local symbol_table_key = aprs_packet_item_get_symbol_table_key(self.Handle);
+
+		return tostring(symbol_table), tostring(symbol_table_key);
+	end
+	function item:GetComment()
+		local value = aprs_packet_item_get_comment(self.Handle);
+
+		return tostring(value);
+	end
+	-- @return latitude, longitude, altitude, speed, course
+	function item:GetPosition()
+		local speed     = aprs_packet_item_get_speed(self.Handle);
+		local course    = aprs_packet_item_get_course(self.Handle);
+		local altitude  = aprs_packet_item_get_altitude(self.Handle);
+		local latitude  = aprs_packet_item_get_latitude(self.Handle);
+		local longitude = aprs_packet_item_get_longitude(self.Handle);
+
+		return tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
+	end
 
 	if not read_only then
-		
+		function item:SetName(value)
+			return aprs_packet_item_set_name(self.Handle, value) and true or false;
+		end
+		function item:SetAlive(value)
+			return aprs_packet_item_set_alive(self.Handle, value) and true or false;
+		end
+		function item:SetSymbol(table, key)
+			return aprs_packet_item_set_symbol(self.Handle, table, key) and true or false;
+		end
+		function item:SetComment(value)
+			return aprs_packet_item_set_comment(self.Handle, value) and true or false;
+		end
+		function item:SetPosition(latitude, longitude, altitude, speed, course)
+			if not aprs_packet_item_set_speed(self.Handle, speed) then
+				return false;
+			end
+
+			if not aprs_packet_item_set_course(self.Handle, course) then
+				return false;
+			end
+
+			if not aprs_packet_item_set_altitude(self.Handle, altitude) then
+				return false;
+			end
+
+			if not aprs_packet_item_set_latitude(self.Handle, latitude) then
+				return false;
+			end
+
+			if not aprs_packet_item_set_longitude(self.Handle, longitude) then
+				return false;
+			end
+
+			return true;
+		end
+		function item:SetCompressed(value)
+			return aprs_packet_item_set_compressed(self.Handle, value) and true or false;
+		end
 	end
 
 	return item;
@@ -600,10 +670,80 @@ function APRS.Packet.Object.InitFromHandle(handle, read_only, take_ownership)
 		end
 	});
 
-	-- TODO: implement
+	function object:IsAlive()
+		return aprs_packet_object_is_alive(self.Handle) and true or false;
+	end
+	function object:IsCompressed()
+		return aprs_packet_object_is_compressed(self.Handle) and true or false;
+	end
+
+	function object:GetName()
+		local value = aprs_packet_object_get_name(self.Handle);
+
+		return tostring(value);
+	end
+	-- @return symbol_table, symbol_table_key
+	function object:GetSymbol()
+		local symbol_table     = aprs_packet_object_get_symbol_table(self.Handle);
+		local symbol_table_key = aprs_packet_object_get_symbol_table_key(self.Handle);
+
+		return tostring(symbol_table), tostring(symbol_table_key);
+	end
+	function object:GetComment()
+		local value = aprs_packet_object_get_comment(self.Handle);
+
+		return tostring(value);
+	end
+	-- @return latitude, longitude, altitude, speed, course
+	function object:GetPosition()
+		local speed     = aprs_packet_object_get_speed(self.Handle);
+		local course    = aprs_packet_object_get_course(self.Handle);
+		local altitude  = aprs_packet_object_get_altitude(self.Handle);
+		local latitude  = aprs_packet_object_get_latitude(self.Handle);
+		local longitude = aprs_packet_object_get_longitude(self.Handle);
+
+		return tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
+	end
 
 	if not read_only then
-		
+		function object:SetName(value)
+			return aprs_packet_object_set_name(self.Handle, value) and true or false;
+		end
+		function object:SetAlive(value)
+			return aprs_packet_object_set_alive(self.Handle, value) and true or false;
+		end
+		function object:SetSymbol(table, key)
+			return aprs_packet_object_set_symbol(self.Handle, table, key) and true or false;
+		end
+		function object:SetComment(value)
+			return aprs_packet_object_set_comment(self.Handle, value) and true or false;
+		end
+		function object:SetPosition(latitude, longitude, altitude, speed, course)
+			if not aprs_packet_object_set_speed(self.Handle, speed) then
+				return false;
+			end
+
+			if not aprs_packet_object_set_course(self.Handle, course) then
+				return false;
+			end
+
+			if not aprs_packet_object_set_altitude(self.Handle, altitude) then
+				return false;
+			end
+
+			if not aprs_packet_object_set_latitude(self.Handle, latitude) then
+				return false;
+			end
+
+			if not aprs_packet_object_set_longitude(self.Handle, longitude) then
+				return false;
+			end
+
+			return true;
+		end
+		function object:SetCompressed(value)
+			return aprs_packet_object_set_compressed(self.Handle, value) and true or false;
+		end
 	end
 
 	return object;
@@ -697,6 +837,11 @@ function APRS.Packet.Status.InitFromHandle(handle, read_only, take_ownership)
 	return status;
 end
 
+--[[
+aprs_packet_message_init_ack
+aprs_packet_message_init_reject
+aprs_packet_message_init_bulletin
+--]]
 -- @param path can be string or path
 function APRS.Packet.Message.Init(sender, tocall, path, destination, content)
 	local path_type = type(path);
@@ -749,10 +894,44 @@ function APRS.Packet.Message.InitFromHandle(handle, read_only, take_ownership)
 		end
 	});
 
-	-- TODO: implement
+	function message:GetID()
+		local value = aprs_packet_message_get_id(self.Handle);
+
+		if not value then
+			return nil;
+		end
+
+		return tostring(value);
+	end
+	function message:GetType()
+		local value = aprs_packet_message_get_type(self.Handle);
+
+		return tonumber(value);
+	end
+	function message:GetContent()
+		local value = aprs_packet_message_get_content(self.Handle);
+
+		return tostring(value);
+	end
+	function message:GetDestination()
+		local value = aprs_packet_message_get_destination(self.Handle);
+
+		return tostring(value);
+	end
 
 	if not read_only then
-		
+		function message:SetID(value)
+			return aprs_packet_message_set_id(self.Handle, value) and true or false;
+		end
+		function message:SetType(value)
+			return aprs_packet_message_set_type(self.Handle, value) and true or false;
+		end
+		function message:SetContent(value)
+			return aprs_packet_message_set_content(self.Handle, value) and true or false;
+		end
+		function message:SetDestination(value)
+			return aprs_packet_message_set_destination(self.Handle, value) and true or false;
+		end
 	end
 
 	return message;
@@ -810,15 +989,45 @@ function APRS.Packet.Weather.InitFromHandle(handle, read_only, take_ownership)
 		end
 	});
 
+	--[[
+	aprs_packet_weather_get_time
+	aprs_packet_weather_get_type
+	aprs_packet_weather_get_software
+	aprs_packet_weather_get_wind_speed
+	aprs_packet_weather_get_wind_speed_gust
+	aprs_packet_weather_get_wind_direction
+	aprs_packet_weather_get_rainfall_last_hour
+	aprs_packet_weather_get_rainfall_last_24_hours
+	aprs_packet_weather_get_rainfall_since_midnight
+	aprs_packet_weather_get_humidity
+	aprs_packet_weather_get_temperature
+	aprs_packet_weather_get_barometric_pressure
+	--]]
+
 	-- TODO: implement
 
 	if not read_only then
-		
+		--[[
+		aprs_packet_weather_set_time
+		aprs_packet_weather_set_wind_speed
+		aprs_packet_weather_set_wind_speed_gust
+		aprs_packet_weather_set_wind_direction
+		aprs_packet_weather_set_rainfall_last_hour
+		aprs_packet_weather_set_rainfall_last_24_hours
+		aprs_packet_weather_set_rainfall_since_midnight
+		aprs_packet_weather_set_humidity
+		aprs_packet_weather_set_temperature
+		aprs_packet_weather_set_barometric_pressure
+		--]]
 	end
 
 	return weather;
 end
 
+--[[
+aprs_packet_position_init_mic_e
+aprs_packet_position_init_compressed
+--]]
 -- @param path can be string or path
 function APRS.Packet.Position.Init(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key)
 	local path_type = type(path);
@@ -873,13 +1082,51 @@ function APRS.Packet.Position.InitFromHandle(handle, read_only, take_ownership)
 
 	-- TODO: implement
 
+	--[[
+	aprs_packet_position_is_mic_e
+	aprs_packet_position_is_compressed
+	aprs_packet_position_is_messaging_enabled
+	aprs_packet_position_get_time
+	aprs_packet_position_get_flags
+	aprs_packet_position_get_comment
+	aprs_packet_position_get_speed
+	aprs_packet_position_get_course
+	aprs_packet_position_get_altitude
+	aprs_packet_position_get_latitude
+	aprs_packet_position_get_longitude
+	aprs_packet_position_get_symbol_table
+	aprs_packet_position_get_symbol_table_key
+	aprs_packet_position_get_mic_e_message
+	--]]
+
 	if not read_only then
-		
+		--[[
+		aprs_packet_position_set_time
+		aprs_packet_position_set_comment
+		aprs_packet_position_set_speed
+		aprs_packet_position_set_course
+		aprs_packet_position_set_altitude
+		aprs_packet_position_set_latitude
+		aprs_packet_position_set_longitude
+		aprs_packet_position_set_symbol
+		aprs_packet_position_set_symbol_table
+		aprs_packet_position_set_symbol_table_key
+		aprs_packet_position_set_mic_e_message
+		aprs_packet_position_enable_mic_e
+		aprs_packet_position_enable_messaging
+		aprs_packet_position_enable_compression
+		--]]
 	end
 
 	return position;
 end
 
+--[[
+aprs_packet_telemetry_init_bits
+aprs_packet_telemetry_init_eqns
+aprs_packet_telemetry_init_units
+aprs_packet_telemetry_init_params
+--]]
 -- @param path can be string or path
 function APRS.Packet.Telemetry.Init(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence)
 	local function init(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence, func)
@@ -942,8 +1189,28 @@ function APRS.Packet.Telemetry.InitFromHandle(handle, read_only, take_ownership)
 
 	-- TODO: implement
 
+	--[[
+	aprs_packet_telemetry_get_type
+	aprs_packet_telemetry_get_analog
+	aprs_packet_telemetry_get_analog_float
+	aprs_packet_telemetry_get_bits
+	aprs_packet_telemetry_get_eqns
+	aprs_packet_telemetry_get_units
+	aprs_packet_telemetry_get_params
+	aprs_packet_telemetry_get_digital
+	aprs_packet_telemetry_get_sequence
+	aprs_packet_telemetry_get_comment
+	--]]
+
 	if not read_only then
-		
+		--[[
+		aprs_packet_telemetry_set_bits
+		aprs_packet_telemetry_set_analog
+		aprs_packet_telemetry_set_analog_float
+		aprs_packet_telemetry_set_digital
+		aprs_packet_telemetry_set_sequence
+		aprs_packet_telemetry_set_comment
+		--]]
 	end
 
 	return telemetry;
