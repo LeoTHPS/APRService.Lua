@@ -36,14 +36,14 @@ local function APRService_Event_Init(handle)
 	function event:GetConnect()
 		local type = aprservice_event_information_get_connect(self.Handle);
 
-		if type ~= APRService.APRSERVICE_EVENT_CONNECT then
+		if type ~= APRService.EVENT_CONNECT then
 			return nil;
 		end
 	end
 	function event:GetDisconnect()
 		local type = aprservice_event_information_get_disconnect(self.Handle);
 
-		if type ~= APRService.APRSERVICE_EVENT_DISCONNECT then
+		if type ~= APRService.EVENT_DISCONNECT then
 			return nil;
 		end
 	end
@@ -51,7 +51,7 @@ local function APRService_Event_Init(handle)
 	function event:GetAuthenticate()
 		local type, message, success, verified = aprservice_event_information_get_authenticate(self.Handle);
 
-		if type ~= APRService.APRSERVICE_EVENT_AUTHENTICATE then
+		if type ~= APRService.EVENT_AUTHENTICATE then
 			return nil;
 		end
 
@@ -61,7 +61,7 @@ local function APRService_Event_Init(handle)
 	function event:GetReceivePacket()
 		local type, packet = aprservice_event_information_get_receive_packet(self.Handle);
 
-		if type ~= APRService.APRSERVICE_EVENT_RECEIVE_PACKET then
+		if type ~= APRService.EVENT_RECEIVE_PACKET then
 			return nil;
 		end
 
@@ -71,7 +71,7 @@ local function APRService_Event_Init(handle)
 	function event:GetReceiveMessage()
 		local type, packet, sender, content, destination = aprservice_event_information_get_receive_message(self.Handle);
 
-		if type ~= APRService.APRSERVICE_EVENT_RECEIVE_MESSAGE then
+		if type ~= APRService.EVENT_RECEIVE_MESSAGE then
 			return nil;
 		end
 
@@ -81,7 +81,7 @@ local function APRService_Event_Init(handle)
 	function event:GetReceiveServerMessage()
 		local type, content = aprservice_event_information_get_receive_server_message(self.Handle);
 
-		if type ~= APRService.APRSERVICE_EVENT_RECEIVE_SERVER_MESSAGE then
+		if type ~= APRService.EVENT_RECEIVE_SERVER_MESSAGE then
 			return nil;
 		end
 
