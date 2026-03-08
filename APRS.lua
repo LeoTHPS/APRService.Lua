@@ -722,96 +722,292 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 			end
 		end
 	elseif type == APRS.PACKET_TYPE_WEATHER then
-		--[[
-		aprs_packet_weather_get_time
-		aprs_packet_weather_get_type
-		aprs_packet_weather_get_software
-		aprs_packet_weather_get_wind_speed
-		aprs_packet_weather_get_wind_speed_gust
-		aprs_packet_weather_get_wind_direction
-		aprs_packet_weather_get_rainfall_last_hour
-		aprs_packet_weather_get_rainfall_last_24_hours
-		aprs_packet_weather_get_rainfall_since_midnight
-		aprs_packet_weather_get_humidity
-		aprs_packet_weather_get_temperature
-		aprs_packet_weather_get_barometric_pressure
-		--]]
+		function packet:GetWeatherTime()
+			local value = aprs_packet_weather_get_time(self.Handle);
 
-		-- TODO: implement
+			if not value then
+				return nil;
+			end
+
+			return APRS.Time.FromHandle(value);
+		end
+		function packet:GetWeatherType()
+			local value = aprs_packet_weather_get_type(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetWeatherSoftware()
+			local value = aprs_packet_weather_get_software(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetWeatherWindSpeed()
+			local value = aprs_packet_weather_get_wind_speed(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherWindSpeedGust()
+			local value = aprs_packet_weather_get_wind_speed_gust(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherWindDirection()
+			local value = aprs_packet_weather_get_wind_direction(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherRainfallLastHour()
+			local value = aprs_packet_weather_get_rainfall_last_hour(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherRainfallLast24Hours()
+			local value = aprs_packet_weather_get_rainfall_last_24_hours(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherRainfallSinceMidnight()
+			local value = aprs_packet_weather_get_rainfall_since_midnight(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherHumidity()
+			local value = aprs_packet_weather_get_humidity(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherTemperature()
+			local value = aprs_packet_weather_get_temperature(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetWeatherBarometricPressure()
+			local value = aprs_packet_weather_get_barometric_pressure(self.Handle);
+
+			return tonumber(value);
+		end
 
 		if not read_only then
-			--[[
-			aprs_packet_weather_set_time
-			aprs_packet_weather_set_wind_speed
-			aprs_packet_weather_set_wind_speed_gust
-			aprs_packet_weather_set_wind_direction
-			aprs_packet_weather_set_rainfall_last_hour
-			aprs_packet_weather_set_rainfall_last_24_hours
-			aprs_packet_weather_set_rainfall_since_midnight
-			aprs_packet_weather_set_humidity
-			aprs_packet_weather_set_temperature
-			aprs_packet_weather_set_barometric_pressure
-			--]]
+			function packet:SetWeatherTime(value)
+				local value_type = type(value);
+
+				if value_type == "table" then
+					return aprs_packet_weather_set_time(self.Handle, value.Handle) and true or false;
+				elseif value_type == "userdata" then
+					return aprs_packet_weather_set_time(self.Handle, value) and true or false;
+				end
+
+				return false;
+			end
+			function packet:SetWeatherWindSpeed(value)
+				return aprs_packet_weather_set_wind_speed(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherWindSpeedGust(value)
+				return aprs_packet_weather_set_wind_speed_gust(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherWindDirection(value)
+				return aprs_packet_weather_set_wind_direction(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherRainfallLastHour(value)
+				return aprs_packet_weather_set_rainfall_last_hour(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherRainfallLast24Hours(value)
+				return aprs_packet_weather_set_rainfall_last_24_hours(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherRainfallSinceMidnight(value)
+				return aprs_packet_weather_set_rainfall_since_midnight(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherHumidity(value)
+				return aprs_packet_weather_set_humidity(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherTemperature(value)
+				return aprs_packet_weather_set_temperature(self.Handle, value) and true or false;
+			end
+			function packet:SetWeatherBarometricPressure(value)
+				return aprs_packet_weather_set_barometric_pressure(self.Handle, value) and true or false;
+			end
 		end
 	elseif type == APRS.PACKET_TYPE_POSITION then
-		--[[
-		aprs_packet_position_is_mic_e
-		aprs_packet_position_is_compressed
-		aprs_packet_position_is_messaging_enabled
-		aprs_packet_position_get_time
-		aprs_packet_position_get_flags
-		aprs_packet_position_get_comment
-		aprs_packet_position_get_speed
-		aprs_packet_position_get_course
-		aprs_packet_position_get_altitude
-		aprs_packet_position_get_latitude
-		aprs_packet_position_get_longitude
-		aprs_packet_position_get_symbol_table
-		aprs_packet_position_get_symbol_table_key
-		aprs_packet_position_get_mic_e_message
-		--]]
+		function packet:IsPositionMicE()
+			return aprs_packet_position_is_mic_e(self.Handle) and true or false;
+		end
+		function packet:IsPositionCompressed()
+			return aprs_packet_position_is_compressed(self.Handle) and true or false;
+		end
+		function packet:IsPositionMessagingEnabled()
+			return aprs_packet_position_is_messaging_enabled(self.Handle) and true or false;
+		end
+
+		-- @return latitude, longitude, altitude, speed, course
+		function packet:GetPosition()
+			local speed     = aprs_packet_position_get_speed(self.Handle);
+			local course    = aprs_packet_position_get_course(self.Handle);
+			local altitude  = aprs_packet_position_get_altitude(self.Handle);
+			local latitude  = aprs_packet_position_get_latitude(self.Handle);
+			local longitude = aprs_packet_position_get_longitude(self.Handle);
+
+			return tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
+		end
+		function packet:GetPositionTime()
+			local value = aprs_packet_position_get_time(self.Handle);
+
+			if not value then
+				return nil;
+			end
+
+			return APRS.Time.FromHandle(value);
+		end
+		function packet:GetPositionFlags()
+			local value = aprs_packet_position_get_flags(self.Handle);
+
+			return tonumber(value);
+		end
+		-- @return symbol_table, symbol_table_key
+		function packet:GetPositionSymbol()
+			local symbol_table     = aprs_packet_position_get_symbol_table(self.Handle);
+			local symbol_table_key = aprs_packet_position_get_symbol_table_key(self.Handle);
+
+			return tostring(symbol_table), tostring(symbol_table_key);
+		end
+		function packet:GetPositionComment()
+			local value = aprs_packet_position_get_comment(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetPositionMicEComment()
+			local value = aprs_packet_position_get_mic_e_message(self.Handle);
+
+			return tonumber(value);
+		end
 
 		if not read_only then
-			--[[
-			aprs_packet_position_set_time
-			aprs_packet_position_set_comment
-			aprs_packet_position_set_speed
-			aprs_packet_position_set_course
-			aprs_packet_position_set_altitude
-			aprs_packet_position_set_latitude
-			aprs_packet_position_set_longitude
-			aprs_packet_position_set_symbol
-			aprs_packet_position_set_symbol_table
-			aprs_packet_position_set_symbol_table_key
-			aprs_packet_position_set_mic_e_message
-			aprs_packet_position_enable_mic_e
-			aprs_packet_position_enable_messaging
-			aprs_packet_position_enable_compression
-			--]]
+			function packet:SetPosition(latitude, longitude, altitude, speed, course)
+				if not aprs_packet_position_set_speed(self.Handle, speed) then
+					return false;
+				end
+
+				if not aprs_packet_position_set_course(self.Handle, course) then
+					return false;
+				end
+
+				if not aprs_packet_position_set_altitude(self.Handle, altitude) then
+					return false;
+				end
+
+				if not aprs_packet_position_set_latitude(self.Handle, latitude) then
+					return false;
+				end
+
+				if not aprs_packet_position_set_longitude(self.Handle, longitude) then
+					return false;
+				end
+
+				return true;
+			end
+			function packet:SetPositionTime(value)
+				local value_type = type(value);
+
+				if value_type == "table" then
+					return aprs_packet_position_set_time(self.Handle, value.Handle) and true or false;
+				elseif value_type == "userdata" then
+					return aprs_packet_position_set_time(self.Handle, value) and true or false;
+				end
+
+				return false;
+			end
+			function packet:SetPositionSymbol(table, key)
+				return aprs_packet_position_set_symbol(self.Handle, table, key) and true or false;
+			end
+			function packet:SetPositionComment(value)
+				return aprs_packet_position_set_comment(self.Handle, value) and true or false;
+			end
+			function packet:SetPositionMicEMessage(value)
+				return aprs_packet_position_set_mic_e_message(self.Handle, value) and true or false;
+			end
+
+			function packet:EnablePositionMicE(value)
+				return aprs_packet_position_enable_mic_e(self.Handle, value) and true or false;
+			end
+			function packet:EnablePositionMessaging(value)
+				return aprs_packet_position_enable_messaging(self.Handle, value) and true or false;
+			end
+			function packet:EnablePositionCompression(value)
+				return aprs_packet_position_enable_compression(self.Handle, value) and true or false;
+			end
 		end
 	elseif type == APRS.PACKET_TYPE_TELEMETRY then
-		--[[
-		aprs_packet_telemetry_get_type
-		aprs_packet_telemetry_get_analog
-		aprs_packet_telemetry_get_analog_float
-		aprs_packet_telemetry_get_bits
-		aprs_packet_telemetry_get_eqns
-		aprs_packet_telemetry_get_units
-		aprs_packet_telemetry_get_params
-		aprs_packet_telemetry_get_digital
-		aprs_packet_telemetry_get_sequence
-		aprs_packet_telemetry_get_comment
-		--]]
+		function packet:GetTelemetryType()
+			local value = aprs_packet_telemetry_get_type(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetTelemetryBits()
+			local value = aprs_packet_telemetry_get_bits(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetTelemetryEqns()
+			-- TODO: implement
+			local value = aprs_packet_telemetry_get_eqns(self.Handle);
+		end
+		function packet:GetTelemetryUnits()
+			-- TODO: implement
+			local value = aprs_packet_telemetry_get_units(self.Handle);
+		end
+		function packet:GetTelemetryParams()
+			-- TODO: implement
+			local value = aprs_packet_telemetry_get_params(self.Handle);
+		end
+		-- @return a1, a2, a3, a4, a5
+		function packet:GetTelemetryAnalog()
+			local analog_type = self:GetTelemetryType();
+
+			if analog_type == APRS.TELEMETRY_TYPE_U8 then
+				local a1, a2, a3, a4, a5 = aprs_packet_telemetry_get_analog(self.Handle);
+
+				return tonumber(a1), tonumber(a2), tonumber(a3), tonumber(a4), tonumber(a5);
+			elseif analog_type == APRS.TELEMETRY_TYPE_FLOAT then
+				local a1, a2, a3, a4, a5 = lua_aprs_packet_telemetry_get_analog_float(self.Handle);
+
+				return tonumber(a1), tonumber(a2), tonumber(a3), tonumber(a4), tonumber(a5);
+			end
+		end
+		function packet:GetTelemetryComment()
+			local value = aprs_packet_telemetry_get_comment(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetTelemetryDigital()
+			local value = aprs_packet_telemetry_get_digital(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetTelemetrySequence()
+			local value = aprs_packet_telemetry_get_sequence(self.Handle);
+
+			return tonumber(value);
+		end
 
 		if not read_only then
-			--[[
-			aprs_packet_telemetry_set_bits
-			aprs_packet_telemetry_set_analog
-			aprs_packet_telemetry_set_analog_float
-			aprs_packet_telemetry_set_digital
-			aprs_packet_telemetry_set_sequence
-			aprs_packet_telemetry_set_comment
-			--]]
+			function packet:SetTelemetryBits(value)
+				return aprs_packet_telemetry_set_bits(self.Handle, value) and true or false;
+			end
+			function packet:SetTelemetryAnalog(a1, a2, a3, a4, a5)
+				if (math.type(a1) == "integer") and (math.type(a2) == "integer") and (math.type(a3) == "integer") and (math.type(a4) == "integer") and (math.type(a5) == "integer") then
+					return aprs_packet_telemetry_set_analog(self.Handle, a1, a2, a3, a4, a5) and true or false;
+				end
+
+				return aprs_packet_telemetry_set_analog_float(self.Handle, a1, a2, a3, a4, a5) and true or false;
+			end
+			function packet:SetTelemetryComment(value)
+				return aprs_packet_telemetry_set_comment(self.Handle, value) and true or false;
+			end
+			function packet:SetTelemetryDigital(value)
+				return aprs_packet_telemetry_set_digital(self.Handle, value) and true or false;
+			end
+			function packet:SetTelemetrySequence(value)
+				return aprs_packet_telemetry_set_sequence(self.Handle, value) and true or false;
+			end
 		end
 	elseif type == APRS.PACKET_TYPE_MAP_FEATURE then
 		-- TODO: implement
