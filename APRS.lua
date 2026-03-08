@@ -313,11 +313,21 @@ end
 function APRS.Packet.InitMessage(sender, tocall, path, destination, content)
 	return APRS_Packet_Init(aprs_packet_message_init, false, true, sender, tocall, path, destination, content);
 end
---[[
-aprs_packet_message_init_ack
-aprs_packet_message_init_reject
-aprs_packet_message_init_bulletin
---]]
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitMessageAck(sender, tocall, path, destination, id)
+	return APRS_Packet_Init(aprs_packet_message_init_ack, false, true, sender, tocall, path, destination, id);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitMessageReject(sender, tocall, path, destination, id)
+	return APRS_Packet_Init(aprs_packet_message_init_reject, false, true, sender, tocall, path, destination, id);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitMessageBulletin(sender, tocall, path, destination)
+	return APRS_Packet_Init(aprs_packet_message_init_bulletin, false, true, sender, tocall, path, destination);
+end
 -- @param path can be string or path
 -- @return packet
 function APRS.Packet.InitWeather(sender, tocall, path, type, software)
@@ -328,10 +338,16 @@ end
 function APRS.Packet.InitPosition(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key)
 	return APRS_Packet_Init(aprs_packet_position_init, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key);
 end
---[[
-aprs_packet_position_init_mic_e
-aprs_packet_position_init_compressed
---]]
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitPositionMicE(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key, message)
+	return APRS_Packet_Init(aprs_packet_position_init_mic_e, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key, message);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitPositionCompressed(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key)
+	return APRS_Packet_Init(aprs_packet_position_init_compressed, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key);
+end
 -- @param path can be string or path
 -- @return packet
 function APRS.Packet.InitTelemetry(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence)
@@ -341,12 +357,26 @@ function APRS.Packet.InitTelemetry(sender, tocall, path, a1, a2, a3, a4, a5, dig
 
 	return APRS_Packet_Init(aprs_packet_telemetry_init_float, false, true, sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence);
 end
---[[
-aprs_packet_telemetry_init_bits
-aprs_packet_telemetry_init_eqns
-aprs_packet_telemetry_init_units
-aprs_packet_telemetry_init_params
---]]
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitTelemetryBits(sender, tocall, path, value)
+	return APRS_Packet_Init(aprs_packet_telemetry_init_bits, false, true, sender, tocall, path, value);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitTelemetryEqns(sender, tocall, path)
+	return APRS_Packet_Init(aprs_packet_telemetry_init_eqns, false, true, sender, tocall, path);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitTelemetryUnits(sender, tocall, path)
+	return APRS_Packet_Init(aprs_packet_telemetry_init_units, false, true, sender, tocall, path);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitTelemetryParams(sender, tocall, path)
+	return APRS_Packet_Init(aprs_packet_telemetry_init_params, false, true, sender, tocall, path);
+end
 -- @param path can be string or path
 -- @return packet
 function APRS.Packet.InitThirdParty(sender, tocall, path)
