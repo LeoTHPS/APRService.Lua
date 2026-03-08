@@ -2,16 +2,6 @@ APRS                                    = {};
 APRS.Path                               = {};
 APRS.Time                               = {};
 APRS.Packet                             = {};
-APRS.Packet.GPS                         = {};
-APRS.Packet.Item                        = {};
-APRS.Packet.Object                      = {};
-APRS.Packet.Status                      = {};
-APRS.Packet.Message                     = {};
-APRS.Packet.Weather                     = {};
-APRS.Packet.Position                    = {};
-APRS.Packet.Telemetry                   = {};
-APRS.Packet.ThirdParty                  = {};
-APRS.Packet.UserDefined                 = {};
 
 APRS.TIME_DHM                           = APRS_TIME_DHM;
 APRS.TIME_HMS                           = APRS_TIME_HMS;
@@ -74,6 +64,40 @@ APRS.TELEMETRY_TYPE_PARAMS              = APRS_TELEMETRY_TYPE_PARAMS;
 APRS.TELEMETRY_TYPE_UNITS               = APRS_TELEMETRY_TYPE_UNITS;
 APRS.TELEMETRY_TYPE_EQNS                = APRS_TELEMETRY_TYPE_EQNS;
 APRS.TELEMETRY_TYPE_BITS                = APRS_TELEMETRY_TYPE_BITS;
+
+local function APRS_Packet_Init(init, read_only, take_ownership, sender, tocall, path, ...)
+	local path_type = type(path);
+
+	if path_type == "string" then
+		path = aprs_path_init_from_string(path);
+
+		if not path then
+			return nil;
+		end
+
+		local handle = init(sender, tocall, path, ...);
+
+		if not handle then
+			aprs_path_deinit(path);
+
+			return nil;
+		end
+
+		aprs_path_deinit(path);
+
+		return APRS.Packet.InitFromHandle(handle, read_only, take_ownership);
+	elseif path_type == "table" then
+		local handle = init(sender, tocall, path.Handle, ...);
+
+		if not handle then
+			return nil;
+		end
+
+		return APRS.Packet.InitFromHandle(handle, read_only, take_ownership);
+	end
+
+	return nil;
+end
 
 function APRS.Distance(latitude1, longitude1, latitude2, longitude2, type)
 	local value = aprs_distance(latitude1, longitude1, latitude2, longitude2, type);
@@ -260,39 +284,80 @@ function APRS.Time.FromHandle(handle)
 end
 
 -- @param path can be string or path
+-- @return packet
 function APRS.Packet.Init(sender, tocall, path)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_init(sender, tocall, path);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_init(sender, tocall, path.Handle);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.InitFromHandle(handle, false, true);
+	return APRS_Packet_Init(aprs_packet_init, false, true, sender, tocall, path);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitGPS(sender, tocall, path, nmea)
+	return APRS_Packet_Init(aprs_packet_gps_init, false, true, sender, tocall, path, nmea);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitItem(sender, tocall, path, name, symbol_table, symbol_table_key)
+	return APRS_Packet_Init(aprs_packet_item_init, false, true, sender, tocall, path, name, symbol_table, symbol_table_key);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitObject(sender, tocall, path, name, symbol_table, symbol_table_key)
+	return APRS_Packet_Init(aprs_packet_object_init, false, true, sender, tocall, path, name, symbol_table, symbol_table_key);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitStatus(sender, tocall, path, message)
+	return APRS_Packet_Init(aprs_packet_status_init, false, true, sender, tocall, path, message);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitMessage(sender, tocall, path, destination, content)
+	return APRS_Packet_Init(aprs_packet_message_init, false, true, sender, tocall, path, destination, content);
+end
+--[[
+aprs_packet_message_init_ack
+aprs_packet_message_init_reject
+aprs_packet_message_init_bulletin
+--]]
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitWeather(sender, tocall, path, type, software)
+	return APRS_Packet_Init(aprs_packet_weather_init, false, true, sender, tocall, path, type, software);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitPosition(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key)
+	return APRS_Packet_Init(aprs_packet_position_init, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key);
+end
+--[[
+aprs_packet_position_init_mic_e
+aprs_packet_position_init_compressed
+--]]
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitTelemetry(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence)
+	if (math.type(a1) == "integer") and (math.type(a2) == "integer") and (math.type(a3) == "integer") and (math.type(a4) == "integer") and (math.type(a5) == "integer") then
+		return APRS_Packet_Init(aprs_packet_telemetry_init, false, true, sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence);
 	end
 
-	return nil;
+	return APRS_Packet_Init(aprs_packet_telemetry_init_float, false, true, sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence);
 end
+--[[
+aprs_packet_telemetry_init_bits
+aprs_packet_telemetry_init_eqns
+aprs_packet_telemetry_init_units
+aprs_packet_telemetry_init_params
+--]]
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitThirdParty(sender, tocall, path)
+	return APRS_Packet_Init(aprs_packet_third_party_init, false, true, sender, tocall, path);
+end
+-- @param path can be string or path
+-- @return packet
+function APRS.Packet.InitUserDefined(sender, tocall, path, id, type, data)
+	return APRS_Packet_Init(aprs_packet_user_defined_init, false, true, sender, tocall, path, id, type, data);
+end
+-- @return packet
 function APRS.Packet.InitFromCopy(packet)
 	local handle = aprs_packet_init_from_copy(packet);
 
@@ -302,7 +367,12 @@ function APRS.Packet.InitFromCopy(packet)
 
 	return APRS.Packet.InitFromHandle(handle, false, true);
 end
+-- @return packet
 function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
+	if not handle then
+		return nil;
+	end
+
 	if not handle then
 		return nil;
 	end
@@ -394,105 +464,412 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 		return aprs_packet_compare(self.Handle, packet.Handle) and true or false;
 	end
 
-	function packet:ToGPS()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_GPS then
-			return nil;
-		end
-
-		return APRS.Packet.GPS.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToItem()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_ITEM then
-			return nil;
-		end
-
-		return APRS.Packet.Item.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToObject()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_OBJECT then
-			return nil;
-		end
-
-		return APRS.Packet.Object.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToStatus()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_STATUS then
-			return nil;
-		end
-
-		return APRS.Packet.Status.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToMessage()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_MESSAGE then
-			return nil;
-		end
-
-		return APRS.Packet.Message.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToWeather()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_WEATHER then
-			return nil;
-		end
-
-		return APRS.Packet.Weather.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToPosition()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_POSITION then
-			return nil;
-		end
-
-		return APRS.Packet.Position.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToTelemetry()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_TELEMETRY then
-			return nil;
-		end
-
-		return APRS.Packet.Telemetry.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToThirdParty()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_THIRD_PARTY then
-			return nil;
-		end
-
-		return APRS.Packet.ThirdParty.InitFromHandle(self.Handle, read_only, false);
-	end
-	function packet:ToUserDefined()
-		local type = self:GetType();
-
-		if type ~= APRS.PACKET_TYPE_USER_DEFINED then
-			return nil;
-		end
-
-		return APRS.Packet.UserDefined.InitFromHandle(self.Handle, read_only, false);
-	end
-
 	function packet:ToString()
 		local value = aprs_packet_to_string(self.Handle);
 
 		return tostring(value);
 	end
 
+	local type = packet:GetType();
+
+	if type == APRS.PACKET_TYPE_GPS then
+		function packet:GetGpsNMEA()
+			local value = aprs_packet_gps_get_nmea(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetGpsComment()
+			local value = aprs_packet_gps_get_comment(self.Handle);
+
+			return tostring(value);
+		end
+
+		if not read_only then
+			function packet:SetGpsNMEA(value)
+				return aprs_packet_gps_set_nmea(self.Handle, value) and true or false;
+			end
+			function packet:SetGpsComment(value)
+				return aprs_packet_gps_set_comment(self.Handle, value) and true or false;
+			end
+		end
+	elseif type == APRS.PACKET_TYPE_ITEM then
+		function packet:IsItemAlive()
+			return aprs_packet_item_is_alive(self.Handle) and true or false;
+		end
+		function packet:IsItemCompressed()
+			return aprs_packet_item_is_compressed(self.Handle) and true or false;
+		end
+
+		function packet:GetItemName()
+			local value = aprs_packet_item_get_name(self.Handle);
+
+			return tostring(value);
+		end
+		-- @return symbol_table, symbol_table_key
+		function packet:GetItemSymbol()
+			local symbol_table     = aprs_packet_item_get_symbol_table(self.Handle);
+			local symbol_table_key = aprs_packet_item_get_symbol_table_key(self.Handle);
+
+			return tostring(symbol_table), tostring(symbol_table_key);
+		end
+		function packet:GetItemComment()
+			local value = aprs_packet_item_get_comment(self.Handle);
+
+			return tostring(value);
+		end
+		-- @return latitude, longitude, altitude, speed, course
+		function packet:GetItemPosition()
+			local speed     = aprs_packet_item_get_speed(self.Handle);
+			local course    = aprs_packet_item_get_course(self.Handle);
+			local altitude  = aprs_packet_item_get_altitude(self.Handle);
+			local latitude  = aprs_packet_item_get_latitude(self.Handle);
+			local longitude = aprs_packet_item_get_longitude(self.Handle);
+
+			return tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
+		end
+
+		if not read_only then
+			function packet:SetItemName(value)
+				return aprs_packet_item_set_name(self.Handle, value) and true or false;
+			end
+			function packet:SetItemAlive(value)
+				return aprs_packet_item_set_alive(self.Handle, value) and true or false;
+			end
+			function packet:SetItemSymbol(table, key)
+				return aprs_packet_item_set_symbol(self.Handle, table, key) and true or false;
+			end
+			function packet:SetItemComment(value)
+				return aprs_packet_item_set_comment(self.Handle, value) and true or false;
+			end
+			function packet:SetItemPosition(latitude, longitude, altitude, speed, course)
+				if not aprs_packet_item_set_speed(self.Handle, speed) then
+					return false;
+				end
+
+				if not aprs_packet_item_set_course(self.Handle, course) then
+					return false;
+				end
+
+				if not aprs_packet_item_set_altitude(self.Handle, altitude) then
+					return false;
+				end
+
+				if not aprs_packet_item_set_latitude(self.Handle, latitude) then
+					return false;
+				end
+
+				if not aprs_packet_item_set_longitude(self.Handle, longitude) then
+					return false;
+				end
+
+				return true;
+			end
+			function packet:SetItemCompressed(value)
+				return aprs_packet_item_set_compressed(self.Handle, value) and true or false;
+			end
+		end
+	elseif type == APRS.PACKET_TYPE_TEST then
+		-- TODO: implement
+	elseif type == APRS.PACKET_TYPE_QUERY then
+		-- TODO: implement
+	elseif type == APRS.PACKET_TYPE_OBJECT then
+		function packet:IsObjectAlive()
+			return aprs_packet_object_is_alive(self.Handle) and true or false;
+		end
+		function packet:IsObjectCompressed()
+			return aprs_packet_object_is_compressed(self.Handle) and true or false;
+		end
+
+		function packet:GetObjectName()
+			local value = aprs_packet_object_get_name(self.Handle);
+
+			return tostring(value);
+		end
+		-- @return symbol_table, symbol_table_key
+		function packet:GetObjectSymbol()
+			local symbol_table     = aprs_packet_object_get_symbol_table(self.Handle);
+			local symbol_table_key = aprs_packet_object_get_symbol_table_key(self.Handle);
+
+			return tostring(symbol_table), tostring(symbol_table_key);
+		end
+		function packet:GetObjectComment()
+			local value = aprs_packet_object_get_comment(self.Handle);
+
+			return tostring(value);
+		end
+		-- @return latitude, longitude, altitude, speed, course
+		function packet:GetObjectPosition()
+			local speed     = aprs_packet_object_get_speed(self.Handle);
+			local course    = aprs_packet_object_get_course(self.Handle);
+			local altitude  = aprs_packet_object_get_altitude(self.Handle);
+			local latitude  = aprs_packet_object_get_latitude(self.Handle);
+			local longitude = aprs_packet_object_get_longitude(self.Handle);
+
+			return tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
+		end
+
+		if not read_only then
+			function packet:SetObjectName(value)
+				return aprs_packet_object_set_name(self.Handle, value) and true or false;
+			end
+			function packet:SetObjectAlive(value)
+				return aprs_packet_object_set_alive(self.Handle, value) and true or false;
+			end
+			function packet:SetObjectSymbol(table, key)
+				return aprs_packet_object_set_symbol(self.Handle, table, key) and true or false;
+			end
+			function packet:SetObjectComment(value)
+				return aprs_packet_object_set_comment(self.Handle, value) and true or false;
+			end
+			function packet:SetObjectPosition(latitude, longitude, altitude, speed, course)
+				if not aprs_packet_object_set_speed(self.Handle, speed) then
+					return false;
+				end
+
+				if not aprs_packet_object_set_course(self.Handle, course) then
+					return false;
+				end
+
+				if not aprs_packet_object_set_altitude(self.Handle, altitude) then
+					return false;
+				end
+
+				if not aprs_packet_object_set_latitude(self.Handle, latitude) then
+					return false;
+				end
+
+				if not aprs_packet_object_set_longitude(self.Handle, longitude) then
+					return false;
+				end
+
+				return true;
+			end
+			function packet:SetObjectCompressed(value)
+				return aprs_packet_object_set_compressed(self.Handle, value) and true or false;
+			end
+		end
+	elseif type == APRS.PACKET_TYPE_STATUS then
+		function packet:GetStatusTime()
+			local value = aprs_packet_status_get_time(self.Handle);
+
+			if not value then
+				return nil;
+			end
+
+			return APRS.Time.FromHandle(value);
+		end
+		function packet:GetStatusMessage()
+			local value = aprs_packet_status_get_message(self.Handle);
+
+			return tostring(value);
+		end
+
+		if not read_only then
+			-- @param value can be time or userdata
+			function packet:SetStatusTime(value)
+				local value_type = type(value);
+
+				if value_type == "table" then
+					return aprs_packet_status_set_time(self.Handle, value.Handle) and true or false;
+				elseif value_type == "userdata" then
+					return aprs_packet_status_set_time(self.Handle, value) and true or false;
+				end
+
+				return false;
+			end
+			function packet:SetStatusMessage(value)
+				return aprs_packet_status_set_message(self.Handle, value) and true or false;
+			end
+		end
+	elseif type == APRS.PACKET_TYPE_MESSAGE then
+		function packet:GetMessageID()
+			local value = aprs_packet_message_get_id(self.Handle);
+
+			if not value then
+				return nil;
+			end
+
+			return tostring(value);
+		end
+		function packet:GetMessageType()
+			local value = aprs_packet_message_get_type(self.Handle);
+
+			return tonumber(value);
+		end
+		function packet:GetMessageContent()
+			local value = aprs_packet_message_get_content(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetMessageDestination()
+			local value = aprs_packet_message_get_destination(self.Handle);
+
+			return tostring(value);
+		end
+
+		if not read_only then
+			function packet:SetMessageID(value)
+				return aprs_packet_message_set_id(self.Handle, value) and true or false;
+			end
+			function packet:SetMessageType(value)
+				return aprs_packet_message_set_type(self.Handle, value) and true or false;
+			end
+			function packet:SetMessageContent(value)
+				return aprs_packet_message_set_content(self.Handle, value) and true or false;
+			end
+			function packet:SetMessageDestination(value)
+				return aprs_packet_message_set_destination(self.Handle, value) and true or false;
+			end
+		end
+	elseif type == APRS.PACKET_TYPE_WEATHER then
+		--[[
+		aprs_packet_weather_get_time
+		aprs_packet_weather_get_type
+		aprs_packet_weather_get_software
+		aprs_packet_weather_get_wind_speed
+		aprs_packet_weather_get_wind_speed_gust
+		aprs_packet_weather_get_wind_direction
+		aprs_packet_weather_get_rainfall_last_hour
+		aprs_packet_weather_get_rainfall_last_24_hours
+		aprs_packet_weather_get_rainfall_since_midnight
+		aprs_packet_weather_get_humidity
+		aprs_packet_weather_get_temperature
+		aprs_packet_weather_get_barometric_pressure
+		--]]
+
+		-- TODO: implement
+
+		if not read_only then
+			--[[
+			aprs_packet_weather_set_time
+			aprs_packet_weather_set_wind_speed
+			aprs_packet_weather_set_wind_speed_gust
+			aprs_packet_weather_set_wind_direction
+			aprs_packet_weather_set_rainfall_last_hour
+			aprs_packet_weather_set_rainfall_last_24_hours
+			aprs_packet_weather_set_rainfall_since_midnight
+			aprs_packet_weather_set_humidity
+			aprs_packet_weather_set_temperature
+			aprs_packet_weather_set_barometric_pressure
+			--]]
+		end
+	elseif type == APRS.PACKET_TYPE_POSITION then
+		--[[
+		aprs_packet_position_is_mic_e
+		aprs_packet_position_is_compressed
+		aprs_packet_position_is_messaging_enabled
+		aprs_packet_position_get_time
+		aprs_packet_position_get_flags
+		aprs_packet_position_get_comment
+		aprs_packet_position_get_speed
+		aprs_packet_position_get_course
+		aprs_packet_position_get_altitude
+		aprs_packet_position_get_latitude
+		aprs_packet_position_get_longitude
+		aprs_packet_position_get_symbol_table
+		aprs_packet_position_get_symbol_table_key
+		aprs_packet_position_get_mic_e_message
+		--]]
+
+		if not read_only then
+			--[[
+			aprs_packet_position_set_time
+			aprs_packet_position_set_comment
+			aprs_packet_position_set_speed
+			aprs_packet_position_set_course
+			aprs_packet_position_set_altitude
+			aprs_packet_position_set_latitude
+			aprs_packet_position_set_longitude
+			aprs_packet_position_set_symbol
+			aprs_packet_position_set_symbol_table
+			aprs_packet_position_set_symbol_table_key
+			aprs_packet_position_set_mic_e_message
+			aprs_packet_position_enable_mic_e
+			aprs_packet_position_enable_messaging
+			aprs_packet_position_enable_compression
+			--]]
+		end
+	elseif type == APRS.PACKET_TYPE_TELEMETRY then
+		--[[
+		aprs_packet_telemetry_get_type
+		aprs_packet_telemetry_get_analog
+		aprs_packet_telemetry_get_analog_float
+		aprs_packet_telemetry_get_bits
+		aprs_packet_telemetry_get_eqns
+		aprs_packet_telemetry_get_units
+		aprs_packet_telemetry_get_params
+		aprs_packet_telemetry_get_digital
+		aprs_packet_telemetry_get_sequence
+		aprs_packet_telemetry_get_comment
+		--]]
+
+		if not read_only then
+			--[[
+			aprs_packet_telemetry_set_bits
+			aprs_packet_telemetry_set_analog
+			aprs_packet_telemetry_set_analog_float
+			aprs_packet_telemetry_set_digital
+			aprs_packet_telemetry_set_sequence
+			aprs_packet_telemetry_set_comment
+			--]]
+		end
+	elseif type == APRS.PACKET_TYPE_MAP_FEATURE then
+		-- TODO: implement
+	elseif type == APRS.PACKET_TYPE_GRID_BEACON then
+		-- TODO: implement
+	elseif type == APRS.PACKET_TYPE_THIRD_PARTY then
+		function packet:GetThirdPartyContent()
+			local value = aprs_packet_third_party_get_content(self.Handle);
+
+			return tostring(value);
+		end
+
+		if not read_only then
+			function packet:SetThirdPartyContent(value)
+				return aprs_packet_third_party_set_content(self.Handle, value) and true or false;
+			end
+		end
+	elseif type == APRS.PACKET_TYPE_MICROFINDER then
+		-- TODO: implement
+	elseif type == APRS.PACKET_TYPE_USER_DEFINED then
+		function packet:GetUserDefinedID()
+			local value = aprs_packet_user_defined_get_id(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetUserDefinedData()
+			local value = aprs_packet_user_defined_get_data(self.Handle);
+
+			return tostring(value);
+		end
+		function packet:GetUserDefinedType()
+			local value = aprs_packet_user_defined_get_type(self.Handle);
+
+			return tostring(value);
+		end
+
+		if not read_only then
+			function packet:SetUserDefinedID(value)
+				return aprs_packet_user_defined_set_id(self.Handle, value) and true or false;
+			end
+			function packet:SetUserDefinedData(value)
+				return aprs_packet_user_defined_set_data(self.Handle, value) and true or false;
+			end
+			function packet:SetUserDefinedType(value)
+				return aprs_packet_user_defined_set_type(self.Handle, value) and true or false;
+			end
+		end
+	elseif type == APRS.PACKET_TYPE_SHELTER_TIME then
+		-- TODO: implement
+	elseif type == APRS.PACKET_TYPE_STATION_CAPABILITIES then
+		-- TODO: implement
+	elseif type == APRS.PACKET_TYPE_MAIDENHEAD_GRID_BEACON then
+		-- TODO: implement
+	end
+
 	return packet;
 end
+-- @return packet
 function APRS.Packet.InitFromString(value)
 	local handle = aprs_packet_init_from_string(value);
 
@@ -501,958 +878,4 @@ function APRS.Packet.InitFromString(value)
 	end
 
 	return APRS.Packet.InitFromHandle(handle, false, true);
-end
-
--- @param path can be string or path
-function APRS.Packet.GPS.Init(sender, tocall, path, nmea)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_gps_init(sender, tocall, path, nmea);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.GPS.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_gps_init(sender, tocall, path.Handle, nmea);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.GPS.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.GPS.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local gps  = {};
-	gps.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(gps, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	function gps:GetNMEA()
-		local value = aprs_packet_gps_get_nmea(self.Handle);
-
-		return tostring(value);
-	end
-	function gps:GetComment()
-		local value = aprs_packet_gps_get_comment(self.Handle);
-
-		return tostring(value);
-	end
-
-	if not read_only then
-		function gps:SetNMEA(value)
-			return aprs_packet_gps_set_nmea(self.Handle, value) and true or false;
-		end
-		function gps:SetComment(value)
-			return aprs_packet_gps_set_comment(self.Handle, value) and true or false;
-		end
-	end
-
-	return gps;
-end
-
--- @param path can be string or path
-function APRS.Packet.Item.Init(sender, tocall, path, name, symbol_table, symbol_table_key)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_item_init(sender, tocall, path, name, symbol_table, symbol_table_key);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.Item.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_item_init(sender, tocall, path.Handle, name, symbol_table, symbol_table_key);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.Item.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.Item.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local item  = {};
-	item.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(item, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	function item:IsAlive()
-		return aprs_packet_item_is_alive(self.Handle) and true or false;
-	end
-	function item:IsCompressed()
-		return aprs_packet_item_is_compressed(self.Handle) and true or false;
-	end
-
-	function item:GetName()
-		local value = aprs_packet_item_get_name(self.Handle);
-
-		return tostring(value);
-	end
-	-- @return symbol_table, symbol_table_key
-	function item:GetSymbol()
-		local symbol_table     = aprs_packet_item_get_symbol_table(self.Handle);
-		local symbol_table_key = aprs_packet_item_get_symbol_table_key(self.Handle);
-
-		return tostring(symbol_table), tostring(symbol_table_key);
-	end
-	function item:GetComment()
-		local value = aprs_packet_item_get_comment(self.Handle);
-
-		return tostring(value);
-	end
-	-- @return latitude, longitude, altitude, speed, course
-	function item:GetPosition()
-		local speed     = aprs_packet_item_get_speed(self.Handle);
-		local course    = aprs_packet_item_get_course(self.Handle);
-		local altitude  = aprs_packet_item_get_altitude(self.Handle);
-		local latitude  = aprs_packet_item_get_latitude(self.Handle);
-		local longitude = aprs_packet_item_get_longitude(self.Handle);
-
-		return tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
-	end
-
-	if not read_only then
-		function item:SetName(value)
-			return aprs_packet_item_set_name(self.Handle, value) and true or false;
-		end
-		function item:SetAlive(value)
-			return aprs_packet_item_set_alive(self.Handle, value) and true or false;
-		end
-		function item:SetSymbol(table, key)
-			return aprs_packet_item_set_symbol(self.Handle, table, key) and true or false;
-		end
-		function item:SetComment(value)
-			return aprs_packet_item_set_comment(self.Handle, value) and true or false;
-		end
-		function item:SetPosition(latitude, longitude, altitude, speed, course)
-			if not aprs_packet_item_set_speed(self.Handle, speed) then
-				return false;
-			end
-
-			if not aprs_packet_item_set_course(self.Handle, course) then
-				return false;
-			end
-
-			if not aprs_packet_item_set_altitude(self.Handle, altitude) then
-				return false;
-			end
-
-			if not aprs_packet_item_set_latitude(self.Handle, latitude) then
-				return false;
-			end
-
-			if not aprs_packet_item_set_longitude(self.Handle, longitude) then
-				return false;
-			end
-
-			return true;
-		end
-		function item:SetCompressed(value)
-			return aprs_packet_item_set_compressed(self.Handle, value) and true or false;
-		end
-	end
-
-	return item;
-end
-
--- @param path can be string or path
-function APRS.Packet.Object.Init(sender, tocall, path, name, symbol_table, symbol_table_key)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_object_init(sender, tocall, path, name, symbol_table, symbol_table_key);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.Object.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_object_init(sender, tocall, path.Handle, name, symbol_table, symbol_table_key);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.Object.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.Object.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local object  = {};
-	object.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(object, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	function object:IsAlive()
-		return aprs_packet_object_is_alive(self.Handle) and true or false;
-	end
-	function object:IsCompressed()
-		return aprs_packet_object_is_compressed(self.Handle) and true or false;
-	end
-
-	function object:GetName()
-		local value = aprs_packet_object_get_name(self.Handle);
-
-		return tostring(value);
-	end
-	-- @return symbol_table, symbol_table_key
-	function object:GetSymbol()
-		local symbol_table     = aprs_packet_object_get_symbol_table(self.Handle);
-		local symbol_table_key = aprs_packet_object_get_symbol_table_key(self.Handle);
-
-		return tostring(symbol_table), tostring(symbol_table_key);
-	end
-	function object:GetComment()
-		local value = aprs_packet_object_get_comment(self.Handle);
-
-		return tostring(value);
-	end
-	-- @return latitude, longitude, altitude, speed, course
-	function object:GetPosition()
-		local speed     = aprs_packet_object_get_speed(self.Handle);
-		local course    = aprs_packet_object_get_course(self.Handle);
-		local altitude  = aprs_packet_object_get_altitude(self.Handle);
-		local latitude  = aprs_packet_object_get_latitude(self.Handle);
-		local longitude = aprs_packet_object_get_longitude(self.Handle);
-
-		return tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
-	end
-
-	if not read_only then
-		function object:SetName(value)
-			return aprs_packet_object_set_name(self.Handle, value) and true or false;
-		end
-		function object:SetAlive(value)
-			return aprs_packet_object_set_alive(self.Handle, value) and true or false;
-		end
-		function object:SetSymbol(table, key)
-			return aprs_packet_object_set_symbol(self.Handle, table, key) and true or false;
-		end
-		function object:SetComment(value)
-			return aprs_packet_object_set_comment(self.Handle, value) and true or false;
-		end
-		function object:SetPosition(latitude, longitude, altitude, speed, course)
-			if not aprs_packet_object_set_speed(self.Handle, speed) then
-				return false;
-			end
-
-			if not aprs_packet_object_set_course(self.Handle, course) then
-				return false;
-			end
-
-			if not aprs_packet_object_set_altitude(self.Handle, altitude) then
-				return false;
-			end
-
-			if not aprs_packet_object_set_latitude(self.Handle, latitude) then
-				return false;
-			end
-
-			if not aprs_packet_object_set_longitude(self.Handle, longitude) then
-				return false;
-			end
-
-			return true;
-		end
-		function object:SetCompressed(value)
-			return aprs_packet_object_set_compressed(self.Handle, value) and true or false;
-		end
-	end
-
-	return object;
-end
-
--- @param path can be string or path
-function APRS.Packet.Status.Init(sender, tocall, path, message)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_status_init(sender, tocall, path, message);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.Status.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_status_init(sender, tocall, path.Handle, message);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.Status.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.Status.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local status  = {};
-	status.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(status, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	function status:GetTime()
-		local value = aprs_packet_status_get_time(self.Handle);
-
-		if not value then
-			return nil;
-		end
-
-		return APRS.Time.FromHandle(value);
-	end
-	function status:GetMessage()
-		local value = aprs_packet_status_get_message(self.Handle);
-
-		return tostring(value);
-	end
-
-	if not read_only then
-		-- @param value can be time or userdata
-		function status:SetTime(value)
-			local value_type = type(value);
-
-			if value_type == "table" then
-				return aprs_packet_status_set_time(self.Handle, value.Handle) and true or false;
-			elseif value_type == "userdata" then
-				return aprs_packet_status_set_time(self.Handle, value) and true or false;
-			end
-
-			return false;
-		end
-		function status:SetMessage(value)
-			return aprs_packet_status_set_message(self.Handle, value) and true or false;
-		end
-	end
-
-	return status;
-end
-
---[[
-aprs_packet_message_init_ack
-aprs_packet_message_init_reject
-aprs_packet_message_init_bulletin
---]]
--- @param path can be string or path
-function APRS.Packet.Message.Init(sender, tocall, path, destination, content)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_message_init(sender, tocall, path, destination, content);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.Message.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_message_init(sender, tocall, path.Handle, destination, content);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.Message.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.Message.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local message  = {};
-	message.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(message, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	function message:GetID()
-		local value = aprs_packet_message_get_id(self.Handle);
-
-		if not value then
-			return nil;
-		end
-
-		return tostring(value);
-	end
-	function message:GetType()
-		local value = aprs_packet_message_get_type(self.Handle);
-
-		return tonumber(value);
-	end
-	function message:GetContent()
-		local value = aprs_packet_message_get_content(self.Handle);
-
-		return tostring(value);
-	end
-	function message:GetDestination()
-		local value = aprs_packet_message_get_destination(self.Handle);
-
-		return tostring(value);
-	end
-
-	if not read_only then
-		function message:SetID(value)
-			return aprs_packet_message_set_id(self.Handle, value) and true or false;
-		end
-		function message:SetType(value)
-			return aprs_packet_message_set_type(self.Handle, value) and true or false;
-		end
-		function message:SetContent(value)
-			return aprs_packet_message_set_content(self.Handle, value) and true or false;
-		end
-		function message:SetDestination(value)
-			return aprs_packet_message_set_destination(self.Handle, value) and true or false;
-		end
-	end
-
-	return message;
-end
-
--- @param path can be string or path
-function APRS.Packet.Weather.Init(sender, tocall, path, type, software)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_weather_init(sender, tocall, path, type, software);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.Weather.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_weather_init(sender, tocall, path.Handle, type, software);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.Weather.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.Weather.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local weather  = {};
-	weather.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(weather, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	--[[
-	aprs_packet_weather_get_time
-	aprs_packet_weather_get_type
-	aprs_packet_weather_get_software
-	aprs_packet_weather_get_wind_speed
-	aprs_packet_weather_get_wind_speed_gust
-	aprs_packet_weather_get_wind_direction
-	aprs_packet_weather_get_rainfall_last_hour
-	aprs_packet_weather_get_rainfall_last_24_hours
-	aprs_packet_weather_get_rainfall_since_midnight
-	aprs_packet_weather_get_humidity
-	aprs_packet_weather_get_temperature
-	aprs_packet_weather_get_barometric_pressure
-	--]]
-
-	-- TODO: implement
-
-	if not read_only then
-		--[[
-		aprs_packet_weather_set_time
-		aprs_packet_weather_set_wind_speed
-		aprs_packet_weather_set_wind_speed_gust
-		aprs_packet_weather_set_wind_direction
-		aprs_packet_weather_set_rainfall_last_hour
-		aprs_packet_weather_set_rainfall_last_24_hours
-		aprs_packet_weather_set_rainfall_since_midnight
-		aprs_packet_weather_set_humidity
-		aprs_packet_weather_set_temperature
-		aprs_packet_weather_set_barometric_pressure
-		--]]
-	end
-
-	return weather;
-end
-
---[[
-aprs_packet_position_init_mic_e
-aprs_packet_position_init_compressed
---]]
--- @param path can be string or path
-function APRS.Packet.Position.Init(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_position_init(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.Position.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_position_init(sender, tocall, path.Handle, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.Position.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.Position.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local position  = {};
-	position.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(position, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	-- TODO: implement
-
-	--[[
-	aprs_packet_position_is_mic_e
-	aprs_packet_position_is_compressed
-	aprs_packet_position_is_messaging_enabled
-	aprs_packet_position_get_time
-	aprs_packet_position_get_flags
-	aprs_packet_position_get_comment
-	aprs_packet_position_get_speed
-	aprs_packet_position_get_course
-	aprs_packet_position_get_altitude
-	aprs_packet_position_get_latitude
-	aprs_packet_position_get_longitude
-	aprs_packet_position_get_symbol_table
-	aprs_packet_position_get_symbol_table_key
-	aprs_packet_position_get_mic_e_message
-	--]]
-
-	if not read_only then
-		--[[
-		aprs_packet_position_set_time
-		aprs_packet_position_set_comment
-		aprs_packet_position_set_speed
-		aprs_packet_position_set_course
-		aprs_packet_position_set_altitude
-		aprs_packet_position_set_latitude
-		aprs_packet_position_set_longitude
-		aprs_packet_position_set_symbol
-		aprs_packet_position_set_symbol_table
-		aprs_packet_position_set_symbol_table_key
-		aprs_packet_position_set_mic_e_message
-		aprs_packet_position_enable_mic_e
-		aprs_packet_position_enable_messaging
-		aprs_packet_position_enable_compression
-		--]]
-	end
-
-	return position;
-end
-
---[[
-aprs_packet_telemetry_init_bits
-aprs_packet_telemetry_init_eqns
-aprs_packet_telemetry_init_units
-aprs_packet_telemetry_init_params
---]]
--- @param path can be string or path
-function APRS.Packet.Telemetry.Init(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence)
-	local function init(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence, func)
-		local path_type = type(path);
-
-		if path_type == "string" then
-			path = aprs_path_init_from_string(path);
-
-			if not path then
-				return nil;
-			end
-
-			local handle = func(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence);
-
-			if not handle then
-				aprs_path_deinit(path);
-
-				return nil;
-			end
-
-			aprs_path_deinit(path);
-
-			return APRS.Packet.Telemetry.InitFromHandle(handle, false, true);
-		elseif path_type == "table" then
-			local handle = func(sender, tocall, path.Handle, a1, a2, a3, a4, a5, digital, sequence);
-
-			if not handle then
-				return nil;
-			end
-
-			return APRS.Packet.Telemetry.InitFromHandle(handle, false, true);
-		end
-
-		return nil;
-	end
-
-	if (math.type(a1) == "integer") and (math.type(a2) == "integer") and (math.type(a3) == "integer") and (math.type(a4) == "integer") and (math.type(a5) == "integer") then
-		return init(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence, aprs_packet_telemetry_init);
-	end
-
-	return init(sender, tocall, path, a1, a2, a3, a4, a5, digital, sequence, aprs_packet_telemetry_init_float);
-end
-function APRS.Packet.Telemetry.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local telemetry  = {};
-	telemetry.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(telemetry, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	-- TODO: implement
-
-	--[[
-	aprs_packet_telemetry_get_type
-	aprs_packet_telemetry_get_analog
-	aprs_packet_telemetry_get_analog_float
-	aprs_packet_telemetry_get_bits
-	aprs_packet_telemetry_get_eqns
-	aprs_packet_telemetry_get_units
-	aprs_packet_telemetry_get_params
-	aprs_packet_telemetry_get_digital
-	aprs_packet_telemetry_get_sequence
-	aprs_packet_telemetry_get_comment
-	--]]
-
-	if not read_only then
-		--[[
-		aprs_packet_telemetry_set_bits
-		aprs_packet_telemetry_set_analog
-		aprs_packet_telemetry_set_analog_float
-		aprs_packet_telemetry_set_digital
-		aprs_packet_telemetry_set_sequence
-		aprs_packet_telemetry_set_comment
-		--]]
-	end
-
-	return telemetry;
-end
-
--- @param path can be string or path
-function APRS.Packet.ThirdParty.Init(sender, tocall, path)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_third_party_init(sender, tocall, path);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.ThirdParty.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_third_party_init(sender, tocall, path.Handle);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.ThirdParty.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.ThirdParty.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local third_party  = {};
-	third_party.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(third_party, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	function third_party:GetContent()
-		local value = aprs_packet_third_party_get_content(self.Handle);
-
-		return tostring(value);
-	end
-
-	if not read_only then
-		function third_party:SetContent(value)
-			return aprs_packet_third_party_set_content(self.Handle, value) and true or false;
-		end
-	end
-
-	return third_party;
-end
-
--- @param path can be string or path
-function APRS.Packet.UserDefined.Init(sender, tocall, path, id, type, data)
-	local path_type = type(path);
-
-	if path_type == "string" then
-		path = aprs_path_init_from_string(path);
-
-		if not path then
-			return nil;
-		end
-
-		local handle = aprs_packet_user_defined_init(sender, tocall, path, id, type, data);
-
-		if not handle then
-			aprs_path_deinit(path);
-
-			return nil;
-		end
-
-		aprs_path_deinit(path);
-
-		return APRS.Packet.UserDefined.InitFromHandle(handle, false, true);
-	elseif path_type == "table" then
-		local handle = aprs_packet_user_defined_init(sender, tocall, path.Handle, id, type, data);
-
-		if not handle then
-			return nil;
-		end
-
-		return APRS.Packet.UserDefined.InitFromHandle(handle, false, true);
-	end
-
-	return nil;
-end
-function APRS.Packet.UserDefined.InitFromHandle(handle, read_only, take_ownership)
-	if not handle then
-		return nil;
-	end
-
-	local user_defined  = {};
-	user_defined.Handle = handle;
-
-	if not take_ownership then
-		aprs_packet_add_reference(handle);
-	end
-
-	setmetatable(user_defined, {
-		__gc = function(self)
-			aprs_packet_deinit(self.Handle);
-		end
-	});
-
-	function user_defined:GetID()
-		local value = aprs_packet_user_defined_get_id(self.Handle);
-
-		return tostring(value);
-	end
-	function user_defined:GetData()
-		local value = aprs_packet_user_defined_get_data(self.Handle);
-
-		return tostring(value);
-	end
-	function user_defined:GetType()
-		local value = aprs_packet_user_defined_get_type(self.Handle);
-
-		return tostring(value);
-	end
-
-	if not read_only then
-		function user_defined:SetID(value)
-			return aprs_packet_user_defined_set_id(self.Handle, value) and true or false;
-		end
-		function user_defined:SetData(value)
-			return aprs_packet_user_defined_set_data(self.Handle, value) and true or false;
-		end
-		function user_defined:SetType(value)
-			return aprs_packet_user_defined_set_type(self.Handle, value) and true or false;
-		end
-	end
-
-	return user_defined;
 end
