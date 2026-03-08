@@ -586,6 +586,7 @@ void lua_register_globals_aprs()
 	lua_register_global_ex("aprs_path_get", lua_aprs_path_get);
 	lua_register_global(aprs_path_get_length);
 	lua_register_global(aprs_path_get_capacity);
+	lua_register_global(aprs_path_get_reference_count);
 	lua_register_global(aprs_path_set);
 	lua_register_global(aprs_path_pop);
 	lua_register_global(aprs_path_push);
@@ -612,6 +613,7 @@ void lua_register_globals_aprs()
 	lua_register_global(aprs_packet_get_tocall);
 	lua_register_global(aprs_packet_get_sender);
 	lua_register_global(aprs_packet_get_content);
+	lua_register_global(aprs_packet_get_reference_count);
 	lua_register_global(aprs_packet_set_path);
 	lua_register_global(aprs_packet_set_tocall);
 	lua_register_global(aprs_packet_set_sender);
