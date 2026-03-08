@@ -33,7 +33,7 @@ local function OnReceivePacket(packet)
 	elseif packet_type == APRS.PACKET_TYPE_POSITION then
 		print('OnReceivePacketPosition', packet:IsPositionMicE(), packet:IsPositionCompressed(), packet:IsPositionMessagingEnabled(), packet:GetPosition(), packet:GetPositionTime(), packet:GetPositionFlags(), packet:GetPositionSymbol(), packet:GetPositionComment(), packet:GetPositionMicEComment());
 	elseif packet_type == APRS.PACKET_TYPE_TELEMETRY then
-		print('OnReceivePacketTelemetry', packet:GetTelemetryType(), packet:GetTelemetryBits(), packet:GetTelemetryEqns(), packet:GetTelemetryUnits(), packet:GetTelemetryParams(), packet:GetTelemetryAnalog(), packet:GetTelemetryAnalogFloat(), packet:GetTelemetryComment(), packet:GetTelemetryDigital(), packet:GetTelemetrySequence());
+		print('OnReceivePacketTelemetry', packet:GetTelemetryType(), packet:GetTelemetryBits(), packet:GetTelemetryEqns(), packet:GetTelemetryUnits(), packet:GetTelemetryParams(), packet:GetTelemetryAnalog(), packet:GetTelemetryComment(), packet:GetTelemetryDigital(), packet:GetTelemetrySequence());
 	elseif packet_type == APRS.PACKET_TYPE_MAP_FEATURE then
 		print('OnReceivePacketMapFeature'); -- TODO: implement
 	elseif packet_type == APRS.PACKET_TYPE_GRID_BEACON then
