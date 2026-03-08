@@ -967,7 +967,7 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 
 				return tonumber(a1), tonumber(a2), tonumber(a3), tonumber(a4), tonumber(a5);
 			elseif analog_type == APRS.TELEMETRY_TYPE_FLOAT then
-				local a1, a2, a3, a4, a5 = lua_aprs_packet_telemetry_get_analog_float(self.Handle);
+				local a1, a2, a3, a4, a5 = aprs_packet_telemetry_get_analog_float(self.Handle);
 
 				return tonumber(a1), tonumber(a2), tonumber(a3), tonumber(a4), tonumber(a5);
 			end
