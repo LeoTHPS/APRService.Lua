@@ -599,9 +599,9 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 			end
 		end
 	elseif type == APRS.PACKET_TYPE_TEST then
-		-- TODO: implement
+		-- // TODO: implement
 	elseif type == APRS.PACKET_TYPE_QUERY then
-		-- TODO: implement
+		-- // TODO: implement
 	elseif type == APRS.PACKET_TYPE_OBJECT then
 		function packet:IsObjectAlive()
 			return aprs_packet_object_is_alive(self.Handle) and true or false;
@@ -977,15 +977,15 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 			return tonumber(value);
 		end
 		function packet:GetTelemetryEqns()
-			-- TODO: implement
+			-- // TODO: implement
 			local value = aprs_packet_telemetry_get_eqns(self.Handle);
 		end
 		function packet:GetTelemetryUnits()
-			-- TODO: implement
+			-- // TODO: implement
 			local value = aprs_packet_telemetry_get_units(self.Handle);
 		end
 		function packet:GetTelemetryParams()
-			-- TODO: implement
+			-- // TODO: implement
 			local value = aprs_packet_telemetry_get_params(self.Handle);
 		end
 		-- @return a1, a2, a3, a4, a5
@@ -1040,9 +1040,9 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 			end
 		end
 	elseif type == APRS.PACKET_TYPE_MAP_FEATURE then
-		-- TODO: implement
+		-- // TODO: implement
 	elseif type == APRS.PACKET_TYPE_GRID_BEACON then
-		-- TODO: implement
+		-- // TODO: implement
 	elseif type == APRS.PACKET_TYPE_THIRD_PARTY then
 		function packet:GetThirdPartyContent()
 			local value = aprs_packet_third_party_get_content(self.Handle);
@@ -1056,7 +1056,7 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 			end
 		end
 	elseif type == APRS.PACKET_TYPE_MICROFINDER then
-		-- TODO: implement
+		-- // TODO: implement
 	elseif type == APRS.PACKET_TYPE_USER_DEFINED then
 		function packet:GetUserDefinedID()
 			local value = aprs_packet_user_defined_get_id(self.Handle);
@@ -1086,11 +1086,11 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 			end
 		end
 	elseif type == APRS.PACKET_TYPE_SHELTER_TIME then
-		-- TODO: implement
+		-- // TODO: implement
 	elseif type == APRS.PACKET_TYPE_STATION_CAPABILITIES then
-		-- TODO: implement
+		-- // TODO: implement
 	elseif type == APRS.PACKET_TYPE_MAIDENHEAD_GRID_BEACON then
-		-- TODO: implement
+		-- // TODO: implement
 	end
 
 	return packet;

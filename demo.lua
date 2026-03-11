@@ -58,32 +58,20 @@ end
 local function OnReceiveServerMessage(message)
 	print('OnReceiveServerMessage', 'Message: '..message);
 end
-local function OnEvent(event)
-	local type = event:GetType();
 
-	if type == APRService.EVENT_CONNECT then
-		OnConnect(event:GetConnect());
-	elseif type == APRService.EVENT_DISCONNECT then
-		OnDisconnect(event:GetDisconnect());
-	elseif type == APRService.EVENT_AUTHENTICATE then
-		OnAuthenticate(event:GetAuthenticate());
-	elseif type == APRService.EVENT_RECEIVE_PACKET then
-		OnReceivePacket(event:GetReceivePacket());
-	elseif type == APRService.EVENT_RECEIVE_MESSAGE then
-		OnReceiveMessage(event:GetReceiveMessage());
-	elseif type == APRService.EVENT_RECEIVE_SERVER_MESSAGE then
-		OnReceiveServerMessage(event:GetReceiveServerMessage());
-	end
-end
-
--- collectgarbage('param', 'pause', 100);
--- collectgarbage('param', 'stepmul', 200);
+collectgarbage('param', 'pause',   100);
+collectgarbage('param', 'stepmul', 200);
 
 local service = APRService.Init('N0CALL', 'WIDE1-1', '/', 'l');
 
 if service then
 	service:EnableMonitoring(true);
-	service:SetDefaultEventHandler(OnEvent);
+	service:SetEventHandler(APRService.EVENT_CONNECT,                OnConnect);
+	service:SetEventHandler(APRService.EVENT_DISCONNECT,             OnDisconnect);
+	service:SetEventHandler(APRService.EVENT_AUTHENTICATE,           OnAuthenticate);
+	service:SetEventHandler(APRService.EVENT_RECEIVE_PACKET,         OnReceivePacket);
+	service:SetEventHandler(APRService.EVENT_RECEIVE_MESSAGE,        OnReceiveMessage);
+	service:SetEventHandler(APRService.EVENT_RECEIVE_SERVER_MESSAGE, OnReceiveServerMessage);
 
 	while service:Poll() do
 		if service:IsConnected() then

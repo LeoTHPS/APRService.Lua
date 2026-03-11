@@ -91,6 +91,8 @@ local function APRService_Event_Init(handle)
 	return event;
 end
 
+-- @param path can be string or path
+-- @return aprservice
 function APRService.Init(station, path, symbol_table, symbol_table_key)
 	local service_path = aprs_path_init_from_string(path);
 
@@ -217,10 +219,28 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 	function service:SetPositionType(value)
 		return aprservice_set_position_type(self.Handle, value) and true or false;
 	end
-	-- @param handler(event)
+	-- @param handler(...)
 	function service:SetEventHandler(event, handler)
 		local function detour(event)
-			handler(APRService_Event_Init(event));
+			local e = APRService_Event_Init(event);
+
+			if e ~= nil then
+				local e_type = e:GetType();
+
+				if e_type == APRService.EVENT_CONNECT then
+					handler(e:GetConnect());
+				elseif e_type == APRService.EVENT_DISCONNECT then
+					handler(e:GetDisconnect());
+				elseif e_type == APRService.EVENT_AUTHENTICATE then
+					handler(e:GetAuthenticate());
+				elseif e_type == APRService.EVENT_RECEIVE_PACKET then
+					handler(e:GetReceivePacket());
+				elseif e_type == APRService.EVENT_RECEIVE_MESSAGE then
+					handler(e:GetReceiveMessage());
+				elseif e_type == APRService.EVENT_RECEIVE_SERVER_MESSAGE then
+					handler(e:GetReceiveServerMessage());
+				end
+			end
 		end
 
 		return aprservice_set_event_handler(self.Handle, event, detour) and true or false;
