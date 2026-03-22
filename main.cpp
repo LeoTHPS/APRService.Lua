@@ -997,18 +997,6 @@ int main(int argc, char* argv[])
 		lua_register_globals_aprs();
 		lua_register_globals_aprservice();
 
-#ifndef NDEBUG
-		try
-		{
-			if (!lua.RunFile("APRSpy.lua"))
-				std::cerr << "File not found: demo.lua" << std::endl;
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "Error running file: " << "demo.lua" << std::endl;
-			std::cerr << e.what() << std::endl;
-		}
-#else
 		for (int i = 1; i < argc; ++i)
 			try
 			{
@@ -1026,7 +1014,6 @@ int main(int argc, char* argv[])
 
 				break;
 			}
-#endif
 	}
 
 	return 0;
