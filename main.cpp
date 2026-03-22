@@ -55,11 +55,11 @@ typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*, const char*, const char*, co
 // type, content
 typedef std::tuple<APRSERVICE_EVENTS, const char*>                                                                                                                                                                                                           lua_aprservice_event_information_receive_server_message;
 
-lua_aprs_path_node                                      lua_aprs_path_get(aprs_path* path)
+lua_aprs_path_node                                      lua_aprs_path_get_at(aprs_path* path, uint8_t index)
 {
 	lua_aprs_path_node value(nullptr, false);
 
-	if (auto node = aprs_path_get(path))
+	if (auto node = aprs_path_get_at(path, index))
 	{
 		std::get<0>(value) = node->station;
 		std::get<1>(value) = node->repeated;
@@ -642,7 +642,7 @@ void lua_register_globals_aprs()
 	lua_register_global(aprs_path_init_from_copy);
 	lua_register_global(aprs_path_init_from_string);
 	lua_register_global(aprs_path_deinit);
-	lua_register_global_ex("aprs_path_get", lua_aprs_path_get);
+	lua_register_global_ex("aprs_path_get_at", lua_aprs_path_get_at);
 	lua_register_global(aprs_path_get_length);
 	lua_register_global(aprs_path_get_capacity);
 	lua_register_global(aprs_path_get_reference_count);

@@ -176,7 +176,7 @@ function APRS.Path.InitFromHandle(handle, read_only, take_ownership)
 
 	-- @return station, is_repeated
 	function path:Get(index)
-		local station, is_repeated = aprs_path_get(self.Handle, index);
+		local station, is_repeated = aprs_path_get_at(self.Handle, index);
 
 		if not station then
 			return nil;
