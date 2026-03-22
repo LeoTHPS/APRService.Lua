@@ -52,8 +52,8 @@ local function OnReceivePacket(packet)
 		print('OnReceivePacketMaidenheadGridBeacon'); -- TODO: implement
 	end
 end
-local function OnReceiveMessage(packet, sender, destination, content)
-	print('OnReceiveMessage', 'Sender: '..sender, 'Destination: '..destination, 'Content: '..content);
+local function OnReceiveMessage(packet, id, sender, destination, content)
+	print('OnReceiveMessage', 'ID: '..id, 'Sender: '..sender, 'Destination: '..destination, 'Content: '..content);
 end
 local function OnReceiveServerMessage(message)
 	print('OnReceiveServerMessage', 'Message: '..message);

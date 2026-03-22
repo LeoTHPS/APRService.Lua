@@ -2,11 +2,17 @@ require('APRS');
 
 APRService                                   = {};
 
+-- handler()
 APRService.EVENT_CONNECT                     = APRSERVICE_EVENT_CONNECT;
+-- handler()
 APRService.EVENT_DISCONNECT                  = APRSERVICE_EVENT_DISCONNECT;
+-- handler(message, success, verified)
 APRService.EVENT_AUTHENTICATE                = APRSERVICE_EVENT_AUTHENTICATE;
+-- handler(packet)
 APRService.EVENT_RECEIVE_PACKET              = APRSERVICE_EVENT_RECEIVE_PACKET;
+-- handler(packet, id, sender, destination, content)
 APRService.EVENT_RECEIVE_MESSAGE             = APRSERVICE_EVENT_RECEIVE_MESSAGE;
+-- handler(message)
 APRService.EVENT_RECEIVE_SERVER_MESSAGE      = APRSERVICE_EVENT_RECEIVE_SERVER_MESSAGE;
 
 APRService.MESSAGE_ERROR_SUCCESS             = APRSERVICE_MESSAGE_ERROR_SUCCESS;
@@ -67,15 +73,15 @@ local function APRService_Event_Init(handle)
 
 		return APRS.Packet.InitFromHandle(packet, true, false);
 	end
-	-- @return packet, sender, content, destination
+	-- @return packet, id, sender, content, destination
 	function event:GetReceiveMessage()
-		local type, packet, sender, content, destination = aprservice_event_information_get_receive_message(self.Handle);
+		local type, packet, id, sender, content, destination = aprservice_event_information_get_receive_message(self.Handle);
 
 		if type ~= APRService.EVENT_RECEIVE_MESSAGE then
 			return nil;
 		end
 
-		return APRS.Packet.InitFromHandle(packet, true, false), tostring(sender), tostring(content), tostring(destination);
+		return APRS.Packet.InitFromHandle(packet, true, false), id and tostring(id) or nil, tostring(sender), tostring(content), tostring(destination);
 	end
 	-- @return content
 	function event:GetReceiveServerMessage()
