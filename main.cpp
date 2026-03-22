@@ -1,6 +1,7 @@
 #include <LuaCPP.hpp>
 #include <APRService.hpp>
 
+#include <utility>
 #include <iostream>
 
 #define INT_TO_POINTER(value) ((void*)(uintptr_t)value)
@@ -9,45 +10,50 @@
 LuaCPP lua;
 
 // station, is_repeated
-typedef std::tuple<const char*, bool>                                                                                                                   lua_aprs_path_node;
+typedef std::tuple<const char*, bool>                                                                                                                                                                                                                        lua_aprs_path_node;
 
 // day, hour, minute
-typedef std::tuple<uint8_t, uint8_t, uint8_t>                                                                                                           lua_aprs_time_dhm;
+typedef std::tuple<uint8_t, uint8_t, uint8_t>                                                                                                                                                                                                                lua_aprs_time_dhm;
 // hour, minute, second
-typedef std::tuple<uint8_t, uint8_t, uint8_t>                                                                                                           lua_aprs_time_hms;
+typedef std::tuple<uint8_t, uint8_t, uint8_t>                                                                                                                                                                                                                lua_aprs_time_hms;
 // month, day, hour, minute
-typedef std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>                                                                                                  lua_aprs_time_mdhm;
+typedef std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>                                                                                                                                                                                                       lua_aprs_time_mdhm;
 
-typedef std::tuple<void*>                                                                                                                               lua_aprs_packet_telemetry_eqns;
-typedef std::tuple<void*>                                                                                                                               lua_aprs_packet_telemetry_units;
-typedef std::tuple<void*>                                                                                                                               lua_aprs_packet_telemetry_params;
-typedef std::tuple<uint8_t, uint8_t, uint8_t, uint8_t, uint8_t>                                                                                         lua_aprs_packet_telemetry_analog;
-typedef std::tuple<float, float, float, float, float>                                                                                                   lua_aprs_packet_telemetry_analog_float;
+// eqn1_a, eqn1_b, eqn1_c, eqn2_a, eqn2_b, eqn2_c, eqn3_a, eqn3_b, eqn3_c, eqn4_a, eqn4_b, eqn4_c, eqn5_a, eqn5_b, eqn5_c
+typedef std::tuple<float, float, float, float, float, float, float, float, float, float, float, float, float, float, float>                                                                                                                                  lua_aprs_packet_telemetry_eqns;
+// unit1, unit2, unit3, unit4, unit5, unit6, unit7, unit8, unit9, unit10, unit11, unit12, unit13
+typedef std::tuple<std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view> lua_aprs_packet_telemetry_units;
+// param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13
+typedef std::tuple<std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view> lua_aprs_packet_telemetry_params;
+// value1, value2, value3, value4, value5
+typedef std::tuple<uint8_t, uint8_t, uint8_t, uint8_t, uint8_t>                                                                                                                                                                                              lua_aprs_packet_telemetry_analog;
+// value1, value2, value3, value4, value5
+typedef std::tuple<float, float, float, float, float>                                                                                                                                                                                                        lua_aprs_packet_telemetry_analog_float;
 
 // latitude, longitude, altitude, speed, course
-typedef std::tuple<float, float, int32_t, uint16_t, uint16_t>                                                                                           lua_aprservice_position;
+typedef std::tuple<float, float, int32_t, uint16_t, uint16_t>                                                                                                                                                                                                lua_aprservice_position;
 
 // @return true to reschedule
-typedef LuaCPP::Function<bool(bool is_canceled, uint32_t seconds)>                                                                                      lua_aprservice_task_handler;
-typedef LuaCPP::Function<void(aprservice_event_information* event)>                                                                                     lua_aprservice_event_handler;
-typedef LuaCPP::Function<void(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)> lua_aprservice_command_handler;
+typedef LuaCPP::Function<bool(bool is_canceled, uint32_t seconds)>                                                                                                                                                                                           lua_aprservice_task_handler;
+typedef LuaCPP::Function<void(aprservice_event_information* event)>                                                                                                                                                                                          lua_aprservice_event_handler;
+typedef LuaCPP::Function<void(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)>                                                                                                      lua_aprservice_command_handler;
 // @return true to accept command
-typedef LuaCPP::Function<bool(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)> lua_aprservice_command_filter_handler;
+typedef LuaCPP::Function<bool(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)>                                                                                                      lua_aprservice_command_filter_handler;
 
-typedef LuaCPP::Function<void(APRSERVICE_MESSAGE_ERRORS error)>                                                                                         lua_aprservice_message_callback;
+typedef LuaCPP::Function<void(APRSERVICE_MESSAGE_ERRORS error)>                                                                                                                                                                                              lua_aprservice_message_callback;
 
 // type
-typedef std::tuple<APRSERVICE_EVENTS>                                                                                                                   lua_aprservice_event_information_connect;
+typedef std::tuple<APRSERVICE_EVENTS>                                                                                                                                                                                                                        lua_aprservice_event_information_connect;
 // type
-typedef std::tuple<APRSERVICE_EVENTS>                                                                                                                   lua_aprservice_event_information_disconnect;
+typedef std::tuple<APRSERVICE_EVENTS>                                                                                                                                                                                                                        lua_aprservice_event_information_disconnect;
 // type, message, success, verified
-typedef std::tuple<APRSERVICE_EVENTS, const char*, bool, bool>                                                                                          lua_aprservice_event_information_authenticate;
+typedef std::tuple<APRSERVICE_EVENTS, const char*, bool, bool>                                                                                                                                                                                               lua_aprservice_event_information_authenticate;
 // type, packet
-typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*>                                                                                                     lua_aprservice_event_information_receive_packet;
+typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*>                                                                                                                                                                                                          lua_aprservice_event_information_receive_packet;
 // type, packet, sender, content, destination
-typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*, const char*, const char*, const char*>                                                              lua_aprservice_event_information_receive_message;
+typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*, const char*, const char*, const char*>                                                                                                                                                                   lua_aprservice_event_information_receive_message;
 // type, content
-typedef std::tuple<APRSERVICE_EVENTS, const char*>                                                                                                      lua_aprservice_event_information_receive_server_message;
+typedef std::tuple<APRSERVICE_EVENTS, const char*>                                                                                                                                                                                                           lua_aprservice_event_information_receive_server_message;
 
 lua_aprs_path_node                                      lua_aprs_path_get(aprs_path* path)
 {
@@ -117,30 +123,83 @@ lua_aprs_packet_telemetry_analog_float                  lua_aprs_packet_telemetr
 
 	return value;
 }
+template<size_t I>
+constexpr bool                                          lua_aprs_packet_telemetry_populate_eqn(lua_aprs_packet_telemetry_eqns& value, const aprs_telemetry_eqn** eqns)
+{
+	if (auto eqn = eqns[I])
+	{
+		std::get<(I * 3) + 0>(value) = eqn->a;
+		std::get<(I * 3) + 1>(value) = eqn->b;
+		std::get<(I * 3) + 2>(value) = eqn->c;
+
+		return true;
+	}
+
+	return false;
+}
+template<size_t ... I>
+constexpr void                                          lua_aprs_packet_telemetry_populate_eqns(lua_aprs_packet_telemetry_eqns& value, const aprs_telemetry_eqn** eqns, std::index_sequence<I ...>)
+{
+	(lua_aprs_packet_telemetry_populate_eqn<I>(value, eqns) && ...);
+}
 lua_aprs_packet_telemetry_eqns                          lua_aprs_packet_telemetry_get_eqns(aprs_packet* packet)
 {
 	lua_aprs_packet_telemetry_eqns value;
 
-	if (auto values = aprs_packet_telemetry_get_eqns(packet))
-		; // TODO: implement
+	if (auto eqns = aprs_packet_telemetry_get_eqns(packet))
+		lua_aprs_packet_telemetry_populate_eqns(value, eqns, std::make_index_sequence<5> {});
 
 	return value;
+}
+template<size_t I>
+constexpr bool                                          lua_aprs_packet_telemetry_populate_unit(lua_aprs_packet_telemetry_units& value, const char** units)
+{
+	if (auto unit = units[I])
+	{
+		std::get<I>(value) = unit;
+
+		return true;
+	}
+
+	return false;
+}
+template<size_t ... I>
+constexpr void                                          lua_aprs_packet_telemetry_populate_units(lua_aprs_packet_telemetry_units& value, const char** units, std::index_sequence<I ...>)
+{
+	(lua_aprs_packet_telemetry_populate_unit<I>(value, units) && ...);
 }
 lua_aprs_packet_telemetry_units                         lua_aprs_packet_telemetry_get_units(aprs_packet* packet)
 {
 	lua_aprs_packet_telemetry_units value;
 
-	if (auto values = aprs_packet_telemetry_get_units(packet))
-		; // TODO: implement
+	if (auto units = aprs_packet_telemetry_get_units(packet))
+		lua_aprs_packet_telemetry_populate_units(value, units, std::make_index_sequence<13> {});
 
 	return value;
+}
+template<size_t I>
+constexpr bool                                          lua_aprs_packet_telemetry_populate_param(lua_aprs_packet_telemetry_params& value, const char** params)
+{
+	if (auto param = params[I])
+	{
+		std::get<I>(value) = param;
+
+		return true;
+	}
+
+	return false;
+}
+template<size_t ... I>
+constexpr void                                          lua_aprs_packet_telemetry_populate_params(lua_aprs_packet_telemetry_params& value, const char** params, std::index_sequence<I ...>)
+{
+	(lua_aprs_packet_telemetry_populate_param<I>(value, params) && ...);
 }
 lua_aprs_packet_telemetry_params                        lua_aprs_packet_telemetry_get_params(aprs_packet* packet)
 {
 	lua_aprs_packet_telemetry_params value;
 
-	if (auto values = aprs_packet_telemetry_get_params(packet))
-		; // TODO: implement
+	if (auto params = aprs_packet_telemetry_get_params(packet))
+		lua_aprs_packet_telemetry_populate_params(value, params, std::make_index_sequence<13> {});
 
 	return value;
 }
@@ -938,6 +997,18 @@ int main(int argc, char* argv[])
 		lua_register_globals_aprs();
 		lua_register_globals_aprservice();
 
+#ifndef NDEBUG
+		try
+		{
+			if (!lua.RunFile("APRSpy.lua"))
+				std::cerr << "File not found: demo.lua" << std::endl;
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Error running file: " << "demo.lua" << std::endl;
+			std::cerr << e.what() << std::endl;
+		}
+#else
 		for (int i = 1; i < argc; ++i)
 			try
 			{
@@ -955,6 +1026,7 @@ int main(int argc, char* argv[])
 
 				break;
 			}
+#endif
 	}
 
 	return 0;

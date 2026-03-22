@@ -976,17 +976,72 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 
 			return tonumber(value);
 		end
+		-- @return eqn1, eqn2, eqn3, eqn4, eqn5
 		function packet:GetTelemetryEqns()
-			-- // TODO: implement
-			local value = aprs_packet_telemetry_get_eqns(self.Handle);
+			local eqn1                                                                                                                   = nil;
+			local eqn2                                                                                                                   = nil;
+			local eqn3                                                                                                                   = nil;
+			local eqn4                                                                                                                   = nil;
+			local eqn5                                                                                                                   = nil;
+			local eqn1_a, eqn1_b, eqn1_c, eqn2_a, eqn2_b, eqn2_c, eqn3_a, eqn3_b, eqn3_c, eqn4_a, eqn4_b, eqn4_c, eqn5_a, eqn5_b, eqn5_c = aprs_packet_telemetry_get_eqns(self.Handle);
+
+			if (eqn1_a and eqn1_b and eqn1_c) then
+				eqn1 = { eqn1_a, eqn1_b, eqn1_c };
+
+				if (eqn2_a and eqn2_b and eqn2_c) then
+					eqn2 = { eqn2_a, eqn2_b, eqn2_c };
+
+					if (eqn3_a and eqn3_b and eqn3_c) then
+						eqn3 = { eqn3_a, eqn3_b, eqn3_c };
+
+						if (eqn4_a and eqn4_b and eqn4_c) then
+							eqn4 = { eqn4_a, eqn4_b, eqn4_c };
+
+							if (eqn5_a and eqn5_b and eqn5_c) then
+								eqn5 = { eqn5_a, eqn5_b, eqn5_c };
+							end
+						end
+					end
+				end
+			end
+
+			return eqn1, eqn2, eqn3, eqn4, eqn5;
 		end
+		-- @return unit1, unit2, unit3, unit4, unit5, unit6, unit7, unit8, unit9, unit10, unit11, unit12, unit13
 		function packet:GetTelemetryUnits()
-			-- // TODO: implement
-			local value = aprs_packet_telemetry_get_units(self.Handle);
+			local unit1, unit2, unit3, unit4, unit5, unit6, unit7, unit8, unit9, unit10, unit11, unit12, unit13 = aprs_packet_telemetry_get_units(self.Handle);
+
+			return unit1 and tostring(unit1) or nil,
+					unit2 and tostring(unit2) or nil,
+					unit3 and tostring(unit3) or nil,
+					unit4 and tostring(unit4) or nil,
+					unit5 and tostring(unit5) or nil,
+					unit6 and tostring(unit6) or nil,
+					unit7 and tostring(unit7) or nil,
+					unit8 and tostring(unit8) or nil,
+					unit9 and tostring(unit9) or nil,
+					unit10 and tostring(unit10) or nil,
+					unit11 and tostring(unit11) or nil,
+					unit12 and tostring(unit12) or nil,
+					unit13 and tostring(unit13) or nil;
 		end
+		-- @return param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13
 		function packet:GetTelemetryParams()
-			-- // TODO: implement
-			local value = aprs_packet_telemetry_get_params(self.Handle);
+			local param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13 = aprs_packet_telemetry_get_params(self.Handle);
+
+			return param1 and tostring(param1) or nil,
+					param2 and tostring(param2) or nil,
+					param3 and tostring(param3) or nil,
+					param4 and tostring(param4) or nil,
+					param5 and tostring(param5) or nil,
+					param6 and tostring(param6) or nil,
+					param7 and tostring(param7) or nil,
+					param8 and tostring(param8) or nil,
+					param9 and tostring(param9) or nil,
+					param10 and tostring(param10) or nil,
+					param11 and tostring(param11) or nil,
+					param12 and tostring(param12) or nil,
+					param13 and tostring(param13) or nil;
 		end
 		-- @return a1, a2, a3, a4, a5
 		function packet:GetTelemetryAnalog()
