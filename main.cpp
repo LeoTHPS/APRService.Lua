@@ -330,7 +330,7 @@ bool                                                    lua_aprservice_send_mess
 
 	return true;
 }
-bool                                                    lua_aprservice_send_message_ex(aprservice* service, std::string_view destination, std::string_view content, std::string_view id, uint32_t timeout, lua_aprservice_message_callback callback)
+bool                                                    lua_aprservice_send_message_ex(aprservice* service, std::string_view destination, std::string_view content, const char* id, uint32_t timeout, lua_aprservice_message_callback callback)
 {
 	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, callback.GetReference()) != LUA_TFUNCTION)
 		return false;
@@ -344,7 +344,7 @@ bool                                                    lua_aprservice_send_mess
 		return false;
 	}
 
-	if (!aprservice_send_message_ex(service, destination.data(), content.data(), id.data(), timeout, &lua_aprservice_message_callback_detour, INT_TO_POINTER(reference)))
+	if (!aprservice_send_message_ex(service, destination.data(), content.data(), id, timeout, &lua_aprservice_message_callback_detour, INT_TO_POINTER(reference)))
 	{
 		luaL_unref(lua, LUA_REGISTRYINDEX, reference);
 
@@ -412,7 +412,7 @@ void                                                    lua_aprservice_command_h
 {
 	lua_aprservice_command_handler(lua, POINTER_TO_INT(param), false).Execute(command, packet, sender, name, args);
 }
-aprservice_command*                                     lua_aprservice_command_register(aprservice* service, std::string_view name, std::string_view help, lua_aprservice_command_handler handler)
+aprservice_command*                                     lua_aprservice_command_register(aprservice* service, std::string_view name, const char* help, lua_aprservice_command_handler handler)
 {
 	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
 		return nullptr;
@@ -428,7 +428,7 @@ aprservice_command*                                     lua_aprservice_command_r
 
 	aprservice_command* command;
 
-	if (!(command = aprservice_command_register(service, name.data(), help.data(), &lua_aprservice_command_handler_detour, INT_TO_POINTER(reference))))
+	if (!(command = aprservice_command_register(service, name.data(), help, &lua_aprservice_command_handler_detour, INT_TO_POINTER(reference))))
 	{
 		luaL_unref(lua, LUA_REGISTRYINDEX, reference);
 
