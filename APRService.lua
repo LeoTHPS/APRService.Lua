@@ -73,15 +73,15 @@ local function APRService_Event_Init(handle)
 
 		return APRS.Packet.InitFromHandle(packet, true, false);
 	end
-	-- @return packet, id, sender, content, destination
+	-- @return packet, id, sender, destination, content
 	function event:GetReceiveMessage()
-		local type, packet, id, sender, content, destination = aprservice_event_information_get_receive_message(self.Handle);
+		local type, packet, id, sender, destination, content = aprservice_event_information_get_receive_message(self.Handle);
 
 		if type ~= APRService.EVENT_RECEIVE_MESSAGE then
 			return nil;
 		end
 
-		return APRS.Packet.InitFromHandle(packet, true, false), id and tostring(id) or nil, tostring(sender), tostring(content), tostring(destination);
+		return APRS.Packet.InitFromHandle(packet, true, false), id and tostring(id) or nil, tostring(sender), tostring(destination), tostring(content);
 	end
 	-- @return content
 	function event:GetReceiveServerMessage()

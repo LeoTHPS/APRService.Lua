@@ -50,7 +50,7 @@ typedef std::tuple<APRSERVICE_EVENTS>                                           
 typedef std::tuple<APRSERVICE_EVENTS, const char*, bool, bool>                                                                                                                                                                                               lua_aprservice_event_information_authenticate;
 // type, packet
 typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*>                                                                                                                                                                                                          lua_aprservice_event_information_receive_packet;
-// type, packet, id, sender, content, destination
+// type, packet, id, sender, destination, content
 typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*, const char*, const char*, const char*, const char*>                                                                                                                                                      lua_aprservice_event_information_receive_message;
 // type, content
 typedef std::tuple<APRSERVICE_EVENTS, const char*>                                                                                                                                                                                                           lua_aprservice_event_information_receive_server_message;
@@ -556,8 +556,8 @@ lua_aprservice_event_information_receive_message        lua_aprservice_event_inf
 		std::get<1>(value) = ((aprservice_event_information_receive_message*)event)->packet;
 		std::get<2>(value) = ((aprservice_event_information_receive_message*)event)->id;
 		std::get<3>(value) = ((aprservice_event_information_receive_message*)event)->sender;
-		std::get<4>(value) = ((aprservice_event_information_receive_message*)event)->content;
-		std::get<5>(value) = ((aprservice_event_information_receive_message*)event)->destination;
+		std::get<4>(value) = ((aprservice_event_information_receive_message*)event)->destination;
+		std::get<5>(value) = ((aprservice_event_information_receive_message*)event)->content;
 	}
 
 	return value;
