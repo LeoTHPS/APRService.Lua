@@ -178,6 +178,11 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 
 		return tonumber(type), tonumber(latitude), tonumber(longitude), tonumber(altitude), tonumber(speed), tonumber(course);
 	end
+	function service:GetCommandPrefix()
+		local value = aprservice_get_command_prefix(self.Handle);
+
+		return tostring(value);
+	end
 	-- @return seconds
 	function service:GetConnectionTimeout()
 		local value = aprservice_get_connection_timeout(self.Handle);
@@ -224,6 +229,9 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 	end
 	function service:SetPositionType(value)
 		return aprservice_set_position_type(self.Handle, value) and true or false;
+	end
+	function service:SetCommandPrefix(value)
+		aprservice_set_command_prefix(self.Handle, value);
 	end
 	-- @param handler(...)
 	function service:SetEventHandler(event, handler)

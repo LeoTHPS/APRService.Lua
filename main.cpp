@@ -889,6 +889,7 @@ void lua_register_globals_aprservice()
 	lua_register_global(aprservice_get_symbol_table_key);
 	lua_register_global_ex("aprservice_get_position", lua_aprservice_get_position);
 	lua_register_global(aprservice_get_position_type);
+	lua_register_global(aprservice_get_command_prefix);
 	lua_register_global(aprservice_get_connection_timeout);
 	lua_register_global_ex("aprservice_get_event_handler", lua_aprservice_get_event_handler);
 	lua_register_global_ex("aprservice_get_default_event_handler", lua_aprservice_get_default_event_handler);
@@ -899,6 +900,7 @@ void lua_register_globals_aprservice()
 	lua_register_global(aprservice_set_position_type);
 	lua_register_global_ex("aprservice_set_event_handler", lua_aprservice_set_event_handler);
 	lua_register_global_ex("aprservice_set_default_event_handler", lua_aprservice_set_default_event_handler);
+	lua_register_global(aprservice_set_command_prefix);
 	lua_register_global(aprservice_set_connection_timeout);
 	lua_register_global(aprservice_enable_monitoring);
 	lua_register_global(aprservice_poll);
