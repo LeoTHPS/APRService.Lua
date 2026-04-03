@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.25)
 
 set(CMAKE_C_STANDARD               17)
 set(CMAKE_CXX_STANDARD             20)
@@ -12,3 +12,9 @@ add_subdirectory($ENV{APRSERVICE_PATH} APRService)
 project(APRService.Lua)
 add_executable(APRService.Lua main.cpp)
 target_link_libraries(APRService.Lua APRService luacpp)
+
+if(LINUX)
+	target_compile_definitions(APRService.Lua PRIVATE -DLUA_USE_LINUX=1 -DLUA_USE_READLINE=1)
+elseif(UNIX)
+	target_compile_definitions(APRService.Lua PRIVATE -DLUA_USE_POSIX=1 -DLUA_USE_DLOPEN=1)
+endif()
