@@ -575,6 +575,20 @@ lua_aprservice_event_information_receive_server_message lua_aprservice_event_inf
 #define lua_register_global(value)          lua_register_global_ex(#value, value)
 #define lua_register_global_ex(name, value) lua.SetGlobal<value>(name)
 
+void lua_register_globals()
+{
+	lua_register_global_ex("PLATFORM_UNIX",  1);
+	lua_register_global_ex("PLATFORM_LINUX", 2);
+	lua_register_global_ex("PLATFORM_WIN32", 3);
+
+#if defined(PLATFORM_UNIX)
+	lua_register_global_ex("PLATFORM_MACHINE", 1);
+#elif defined(PLATFORM_LINUX)
+	lua_register_global_ex("PLATFORM_MACHINE", 2);
+#elif defined(PLATFORM_WIN32)
+	lua_register_global_ex("PLATFORM_MACHINE", 3);
+#endif
+}
 void lua_register_globals_aprs()
 {
 	lua_register_global(APRS_TIME_DHM);
@@ -997,6 +1011,7 @@ int main(int argc, char* argv[])
 	{
 		lua.LoadLibrary(LuaCPP::Libraries::All);
 
+		lua_register_globals();
 		lua_register_globals_aprs();
 		lua_register_globals_aprservice();
 
