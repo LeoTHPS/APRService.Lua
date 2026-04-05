@@ -577,17 +577,17 @@ lua_aprservice_event_information_receive_server_message lua_aprservice_event_inf
 
 void lua_register_globals()
 {
-#if defined(PLATFORM_UNIX)
-	lua_register_global_ex("PLATFORM", 1);
-#elif defined(PLATFORM_LINUX)
-	lua_register_global_ex("PLATFORM", 2);
-#elif defined(PLATFORM_WIN32)
-	lua_register_global_ex("PLATFORM", 3);
-#endif
+	lua_register_global_ex("PLATFORM_UNIX",  false);
+	lua_register_global_ex("PLATFORM_LINUX", false);
+	lua_register_global_ex("PLATFORM_WIN32", false);
 
-	lua_register_global_ex("PLATFORM_UNIX",  1);
-	lua_register_global_ex("PLATFORM_LINUX", 2);
-	lua_register_global_ex("PLATFORM_WIN32", 3);
+#if defined(PLATFORM_UNIX)
+	lua_register_global_ex("PLATFORM_UNIX",  true);
+#elif defined(PLATFORM_LINUX)
+	lua_register_global_ex("PLATFORM_LINUX", true);
+#elif defined(PLATFORM_WIN32)
+	lua_register_global_ex("PLATFORM_WIN32", true);
+#endif
 }
 void lua_register_globals_aprs()
 {
