@@ -74,7 +74,7 @@ elseif PLATFORM_LINUX then
 		return (match_direction == 'output') and Platform.Linux.GPIO.Output or Platform.Linux.GPIO.Input;
 	end
 
-	function Platform.GPIO.Init(chip, pin, direction, value)
+	function Platform.Linux.GPIO.Init(chip, pin, direction, value)
 		if type(pin) ~= 'string' then
 			return nil;
 		end
