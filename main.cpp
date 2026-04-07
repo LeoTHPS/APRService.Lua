@@ -1031,7 +1031,7 @@ bool main_execute_files(int argc, char* argv[])
 bool main_execute_stdin()
 {
 	std::cout << "APRService.Lua" << std::endl;
-	std::cout << LUA_VERSION << LUA_COPYRIGHT << std::endl;
+	std::cout << LUA_COPYRIGHT << std::endl;
 
 	std::string line;
 	auto        get_next_line = [&line]()->bool
