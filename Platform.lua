@@ -8,7 +8,7 @@ function Platform.Sleep(milliseconds)
 		return;
 	end
 
-	sleep(milliseconds);
+	platform_sleep(milliseconds);
 end
 
 -- @return result

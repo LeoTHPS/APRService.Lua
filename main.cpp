@@ -64,21 +64,6 @@ typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*, const char*, const char*, co
 // type, content
 typedef std::tuple<APRSERVICE_EVENTS, const char*>                                                                                                                                                                                                           lua_aprservice_event_information_receive_server_message;
 
-void                                                    lua_sleep(uint32_t milliseconds)
-{
-#if defined(PLATFORM_UNIX) || defined(PLATFORM_LINUX)
-	timespec ts =
-	{
-		.tv_sec = milliseconds / 1000,
-		.tv_nsec = (milliseconds % 1000) * 1000000
-	};
-
-	nanosleep(&ts, &ts);
-#elif defined(PLATFORM_WIN32)
-	Sleep(milliseconds);
-#endif
-}
-
 lua_aprs_path_node                                      lua_aprs_path_get_at(aprs_path* path, uint8_t index)
 {
 	lua_aprs_path_node value(nullptr, false);
@@ -596,6 +581,21 @@ lua_aprservice_event_information_receive_server_message lua_aprservice_event_inf
 	return value;
 }
 
+void                                                    lua_platform_sleep(uint32_t milliseconds)
+{
+#if defined(PLATFORM_UNIX) || defined(PLATFORM_LINUX)
+	timespec ts =
+	{
+		.tv_sec = milliseconds / 1000,
+		.tv_nsec = (milliseconds % 1000) * 1000000
+	};
+
+	nanosleep(&ts, &ts);
+#elif defined(PLATFORM_WIN32)
+	Sleep(milliseconds);
+#endif
+}
+
 #define lua_register_global(value)          lua_register_global_ex(#value, value)
 #define lua_register_global_ex(name, value) lua.SetGlobal<value>(name)
 
@@ -613,7 +613,7 @@ void lua_register_globals()
 	lua_register_global_ex("PLATFORM_WIN32", true);
 #endif
 
-	lua_register_global_ex("sleep", lua_sleep);
+	lua_register_global_ex("platform_sleep", lua_platform_sleep);
 }
 void lua_register_globals_aprs()
 {
