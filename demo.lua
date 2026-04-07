@@ -75,7 +75,7 @@ if service then
 
 	while service:Poll() do
 		if service:IsConnected() then
-			service:WaitForIO();
+			service:WaitForIO(1);
 		else
 			service:ConnectAprsIs('noam.aprs2.net', 14580, 0);
 		end
