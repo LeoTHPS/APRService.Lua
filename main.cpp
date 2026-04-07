@@ -1,6 +1,7 @@
 #include <LuaCPP.hpp>
 #include <APRService.hpp>
 
+#include <string>
 #include <utility>
 #include <iostream>
 
@@ -1005,6 +1006,59 @@ void lua_register_globals_aprservice()
 	lua_register_global_ex("aprservice_event_information_get_receive_server_message", lua_aprservice_event_information_get_receive_server_message);
 }
 
+bool main_execute_files(int argc, char* argv[])
+{
+	for (int i = 1; i < argc; ++i)
+		try
+		{
+			if (!lua.RunFile(argv[i]))
+			{
+				std::cerr << "File not found: " << argv[i] << std::endl;
+
+				return false;
+			}
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Error running file: " << argv[i] << std::endl;
+			std::cerr << e.what() << std::endl;
+
+			return false;
+		}
+
+	return true;
+}
+bool main_execute_stdin()
+{
+	std::cout << "APRService.Lua" << std::endl;
+	std::cout << LUA_VERSION << LUA_COPYRIGHT << std::endl;
+
+	std::string line;
+	auto        get_next_line = [&line]()->bool
+	{
+		std::cout << "> ";
+
+		// TODO: why is .operator bool() needed?
+		return std::getline(std::cin, line).operator bool();
+	};
+
+	while (get_next_line())
+	{
+		try
+		{
+			lua.Run(line);
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << e.what() << std::endl;
+
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int main(int argc, char* argv[])
 {
 	if (lua)
@@ -1015,23 +1069,10 @@ int main(int argc, char* argv[])
 		lua_register_globals_aprs();
 		lua_register_globals_aprservice();
 
-		for (int i = 1; i < argc; ++i)
-			try
-			{
-				if (!lua.RunFile(argv[i]))
-				{
-					std::cerr << "File not found: " << argv[i] << std::endl;
-
-					break;
-				}
-			}
-			catch (const std::exception& e)
-			{
-				std::cerr << "Error running file: " << argv[i] << std::endl;
-				std::cerr << e.what() << std::endl;
-
-				break;
-			}
+		if (argc <= 1)
+			main_execute_stdin();
+		else
+			main_execute_files(argc, argv);
 	}
 
 	return 0;
