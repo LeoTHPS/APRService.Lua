@@ -294,13 +294,24 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 	function service:SendStatus(message)
 		return aprservice_send_status(self.Handle, message) and true or false;
 	end
-	-- @param callback(error)
-	function service:SendMessage(destination, content, timeout, callback)
-		return aprservice_send_message(self.Handle, destination, content, timeout, callback) and true or false;
+	-- @param timeout_seconds is optional
+	-- @param callback(error) is optional
+	function service:SendMessage(destination, content, timeout_seconds, callback)
+		if not timeout_seconds then
+			timeout_seconds = 0;
+		end
+
+		return aprservice_send_message(self.Handle, destination, content, timeout_seconds, callback) and true or false;
 	end
-	-- @param callback(error)
-	function service:SendMessageEx(destination, content, id, timeout, callback)
-		return aprservice_send_message_ex(self.Handle, destination, content, id, timeout, callback) and true or false;
+	-- @param id is optional
+	-- @param timeout_seconds is optional
+	-- @param callback(error) is optional
+	function service:SendMessageEx(destination, content, id, timeout_seconds, callback)
+		if not timeout_seconds then
+			timeout_seconds = 0;
+		end
+
+		return aprservice_send_message_ex(self.Handle, destination, content, id, timeout_seconds, callback) and true or false;
 	end
 	function service:SendWeather(wind_speed, wind_speed_gust, wind_direction, rainfall_last_hour, rainfall_last_24_hours, rainfall_since_midnight, humidity, temperature, barometric_pressure, type, software)
 		return aprservice_send_weather(self.Handle, wind_speed, wind_speed_gust, wind_direction, rainfall_last_hour, rainfall_last_24_hours, rainfall_since_midnight, humidity, temperature, barometric_pressure, type, software) and true or false;
@@ -343,8 +354,13 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 		aprservice_disconnect(self.Handle);
 	end
 
-	function service:WaitForIO()
-		return aprservice_wait_for_io(self.Handle) and true or false;
+	-- @param timeout_seconds is optional and defaults to 1
+	function service:WaitForIO(timeout_seconds)
+		if not timeout_seconds then
+			timeout_seconds = 1;
+		end
+
+		return aprservice_wait_for_io(self.Handle, timeout_seconds) and true or false;
 	end
 
 	-- @return item
