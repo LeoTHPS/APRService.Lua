@@ -3,6 +3,14 @@ Platform.Unix  = nil;
 Platform.Linux = nil;
 Platform.Win32 = nil;
 
+function Platform.Sleep(milliseconds)
+	if not milliseconds then
+		return;
+	end
+
+	sleep(milliseconds);
+end
+
 -- @return result
 function Platform.ShellExec(string)
 	local handle = io.popen(string);

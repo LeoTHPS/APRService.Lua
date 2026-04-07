@@ -5,6 +5,14 @@
 #include <utility>
 #include <iostream>
 
+#if defined(PLATFORM_UNIX) || defined(PLATFORM_LINUX)
+	#include <ctime>
+#elif defined(PLATFORM_WIN32)
+	#include <Windows.h>
+
+	#undef LoadLibrary
+#endif
+
 #define INT_TO_POINTER(value) ((void*)(uintptr_t)value)
 #define POINTER_TO_INT(value) ((int)(uintptr_t)value)
 
@@ -55,6 +63,21 @@ typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*>                             
 typedef std::tuple<APRSERVICE_EVENTS, aprs_packet*, const char*, const char*, const char*, const char*>                                                                                                                                                      lua_aprservice_event_information_receive_message;
 // type, content
 typedef std::tuple<APRSERVICE_EVENTS, const char*>                                                                                                                                                                                                           lua_aprservice_event_information_receive_server_message;
+
+void                                                    lua_sleep(uint32_t milliseconds)
+{
+#if defined(PLATFORM_UNIX) || defined(PLATFORM_LINUX)
+	timespec ts =
+	{
+		.tv_sec = milliseconds / 1000,
+		.tv_nsec = (milliseconds % 1000) * 1000000
+	};
+
+	nanosleep(&ts, &ts);
+#elif defined(PLATFORM_WIN32)
+	Sleep(milliseconds);
+#endif
+}
 
 lua_aprs_path_node                                      lua_aprs_path_get_at(aprs_path* path, uint8_t index)
 {
@@ -589,6 +612,8 @@ void lua_register_globals()
 #elif defined(PLATFORM_WIN32)
 	lua_register_global_ex("PLATFORM_WIN32", true);
 #endif
+
+	lua_register_global_ex("sleep", lua_sleep);
 }
 void lua_register_globals_aprs()
 {
