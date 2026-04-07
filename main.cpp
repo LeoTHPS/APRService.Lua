@@ -586,6 +586,44 @@ void lua_register_globals()
 	lua_register_global_ex("PLATFORM_UNIX",  true);
 #elif defined(PLATFORM_LINUX)
 	lua_register_global_ex("PLATFORM_LINUX", true);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGABRT", SIGABRT);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGALRM", SIGALRM);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGBUS", SIGBUS);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGCHLD", SIGCHLD);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGCLD", SIGCLD);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGCONT", SIGCONT);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGEMT", SIGEMT);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGFPE", SIGFPE);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGHUP", SIGHUP);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGILL", SIGILL);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGINFO", SIGINFO);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGINT", SIGINT);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGIO", SIGIO);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGIOT", SIGIOT);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGKILL", SIGKILL);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGLOST", SIGLOST);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGPIPE", SIGPIPE);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGPOLL", SIGPOLL);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGPROF", SIGPROF);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGPWR", SIGPWR);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGQUIT", SIGQUIT);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGSEGV", SIGSEGV);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGSTKFLT", SIGSTKFLT);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGSTOP", SIGSTOP);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGTSTP", SIGTSTP);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGSYS", SIGSYS);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGTERM", SIGTERM);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGTRAP", SIGTRAP);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGTTIN", SIGTTIN);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGTTOU", SIGTTOU);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGUNUSED", SIGUNUSED);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGURG", SIGURG);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGUSR1", SIGUSR1);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGUSR2", SIGUSR2);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGVTALRM", SIGVTALRM);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGXCPU", SIGXCPU);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGXFSZ", SIGXFSZ);
+	lua_register_global_ex("PLATFORM_LINUX_SIGNAL_SIGWINCH", SIGWINCH);
 #elif defined(PLATFORM_WIN32)
 	lua_register_global_ex("PLATFORM_WIN32", true);
 #endif
