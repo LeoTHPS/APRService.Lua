@@ -587,7 +587,7 @@ void                                                    lua_platform_sleep(uint3
 	timespec ts =
 	{
 		.tv_sec = milliseconds / 1000,
-		.tv_nsec = (uint64_t)(milliseconds % 1000) * 1000000
+		.tv_nsec = (decltype(timespec::tv_nsec))(milliseconds % 1000) * 1000000
 	};
 
 	nanosleep(&ts, &ts);
