@@ -354,24 +354,8 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 		aprservice_disconnect(self.Handle);
 	end
 
-	-- @param timeout_seconds is optional
 	-- @return is_connected, is_io_ready
 	function service:WaitForIO(timeout_seconds)
-		if not timeout_seconds then
-		::wait_for_io::
-			local result = aprservice_wait_for_io(self.Handle, 1000);
-
-			if result == 0 then
-				return false, false;
-			end
-
-			if result == -1 then
-				goto wait_for_io;
-			end
-
-			return true, true;
-		end
-
 		local result = aprservice_wait_for_io(self.Handle, timeout_seconds);
 
 		if result == 0 then
