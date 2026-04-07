@@ -5,6 +5,14 @@
 #include <utility>
 #include <iostream>
 
+#if defined(PLATFORM_UNIX)
+
+#elif defined(PLATFORM_LINUX)
+	#include <signal.h>
+#elif defined(PLATFORM_WIN32)
+
+#endif
+
 #define INT_TO_POINTER(value) ((void*)(uintptr_t)value)
 #define POINTER_TO_INT(value) ((int)(uintptr_t)value)
 
