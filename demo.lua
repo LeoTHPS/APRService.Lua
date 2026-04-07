@@ -59,9 +59,6 @@ local function OnReceiveServerMessage(message)
 	print('OnReceiveServerMessage', 'Message: '..message);
 end
 
-collectgarbage('param', 'pause',   100);
-collectgarbage('param', 'stepmul', 200);
-
 local service = APRService.Init('N0CALL', 'WIDE1-1', '/', 'l');
 
 if service then
@@ -79,7 +76,5 @@ if service then
 		else
 			service:ConnectAprsIs('noam.aprs2.net', 14580, 0);
 		end
-
-		-- collectgarbage();
 	end
 end
