@@ -354,15 +354,23 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 		aprservice_disconnect(self.Handle);
 	end
 
-	-- @return is_connected, is_io_ready
+	-- @return is_error, is_ready, is_connected
 	function service:WaitForIO(timeout_seconds)
 		local result = aprservice_wait_for_io(self.Handle, timeout_seconds);
 
 		if result == 0 then
-			return false, false;
+			return true, false, false;
 		end
 
-		return true, result ~= -1;
+		if result == -1 then
+			return false, false, true;
+		end
+
+		if result == -2 then
+			return false, false, false;
+		end
+
+		return false, true, true;
 	end
 
 	-- @return item
