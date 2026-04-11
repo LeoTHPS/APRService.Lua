@@ -827,6 +827,7 @@ void lua_register_globals_aprs()
 	lua_register_global(aprs_packet_message_set_destination);
 
 	lua_register_global(aprs_packet_weather_init);
+	lua_register_global(aprs_packet_weather_is_raw);
 	lua_register_global(aprs_packet_weather_get_time);
 	lua_register_global(aprs_packet_weather_get_type);
 	lua_register_global(aprs_packet_weather_get_software);

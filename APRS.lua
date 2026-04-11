@@ -805,6 +805,10 @@ function APRS.Packet.InitFromHandle(handle, read_only, take_ownership)
 			end
 		end
 	elseif type == APRS.PACKET_TYPE_WEATHER then
+		function packet:IsWeatherRaw()
+			return aprs_packet_weather_is_raw(self.Handle) and true or false;
+		end
+
 		function packet:GetWeatherTime()
 			local value = aprs_packet_weather_get_time(self.Handle);
 
