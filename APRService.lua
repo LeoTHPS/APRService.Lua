@@ -149,10 +149,16 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 
 		return APRS.Path.InitFromHandle(handle, true, false);
 	end
+	-- @return timestamp
 	function service:GetTime()
-		local handle = aprservice_get_time(self.Handle);
+		local value = aprservice_get_time(self.Handle);
 
-		return APRS.Time.FromHandle(handle);
+		return tonumber(value);
+	end
+	function service:GetTimeType()
+		local value = aprservice_get_time_type(self.Handle);
+
+		return tonumber(value);
 	end
 	-- @return symbol_table, symbol_table_key
 	function service:GetSymbol()
@@ -217,6 +223,9 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 		end
 
 		return false;
+	end
+	function service:SetTimeType(value)
+		return aprservice_set_time_type(self.Handle, value) and true or false;
 	end
 	function service:SetSymbol(table, key)
 		return aprservice_set_symbol(self.Handle, table, key) and true or false;

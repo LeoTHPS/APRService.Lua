@@ -77,6 +77,20 @@ lua_aprs_path_node                                      lua_aprs_path_get_at(apr
 	return value;
 }
 
+aprs_time*                                              lua_aprs_time_init(int type)
+{
+	aprs_time time;
+
+	if (!aprs_time_now(&time, type))
+		return nullptr;
+
+	return new aprs_time { time };
+}
+void                                                    lua_aprs_time_deinit(aprs_time* time)
+{
+	delete time;
+}
+
 lua_aprs_time_dhm                                       lua_aprs_time_get_dhm(const aprs_time* time)
 {
 	lua_aprs_time_dhm value(0, 0, 0);
@@ -620,6 +634,12 @@ void lua_register_globals_aprs()
 	lua_register_global(APRS_TIME_DHM);
 	lua_register_global(APRS_TIME_HMS);
 	lua_register_global(APRS_TIME_MDHM);
+	lua_register_global(APRS_TIME_ZULU);
+	lua_register_global(APRS_TIME_ZULU_DHM);
+	lua_register_global(APRS_TIME_ZULU_HMS);
+	lua_register_global(APRS_TIME_ZULU_MDHM);
+	lua_register_global(APRS_TIME_LOCAL);
+	lua_register_global(APRS_TIME_LOCAL_DHM);
 
 	lua_register_global(APRS_DISTANCE_FEET);
 	lua_register_global(APRS_DISTANCE_MILES);
@@ -695,7 +715,14 @@ void lua_register_globals_aprs()
 	lua_register_global(aprs_path_to_string);
 	lua_register_global(aprs_path_add_reference);
 
-	lua_register_global(aprs_time_now);
+	lua_register_global(aprs_time_type_is_valid);
+	lua_register_global_ex("aprs_time_init", lua_aprs_time_init);
+	lua_register_global_ex("aprs_time_deinit", lua_aprs_time_deinit);
+	lua_register_global(aprs_time_is_dhm);
+	lua_register_global(aprs_time_is_hms);
+	lua_register_global(aprs_time_is_mdhm);
+	lua_register_global(aprs_time_is_zulu);
+	lua_register_global(aprs_time_is_local);
 	lua_register_global(aprs_time_get_type);
 	lua_register_global_ex("aprs_time_get_dhm", lua_aprs_time_get_dhm);
 	lua_register_global_ex("aprs_time_get_hms", lua_aprs_time_get_hms);
@@ -923,6 +950,7 @@ void lua_register_globals_aprservice()
 	lua_register_global(aprservice_is_compression_enabled);
 	lua_register_global(aprservice_get_path);
 	lua_register_global(aprservice_get_time);
+	lua_register_global(aprservice_get_time_type);
 	lua_register_global(aprservice_get_comment);
 	lua_register_global(aprservice_get_station);
 	lua_register_global(aprservice_get_symbol_table);
@@ -934,6 +962,7 @@ void lua_register_globals_aprservice()
 	lua_register_global_ex("aprservice_get_event_handler", lua_aprservice_get_event_handler);
 	lua_register_global_ex("aprservice_get_default_event_handler", lua_aprservice_get_default_event_handler);
 	lua_register_global(aprservice_set_path);
+	lua_register_global(aprservice_set_time_type);
 	lua_register_global(aprservice_set_symbol);
 	lua_register_global(aprservice_set_comment);
 	lua_register_global(aprservice_set_position);

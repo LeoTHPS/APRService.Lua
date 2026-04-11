@@ -6,6 +6,12 @@ APRS.Packet                             = {};
 APRS.TIME_DHM                           = APRS_TIME_DHM;
 APRS.TIME_HMS                           = APRS_TIME_HMS;
 APRS.TIME_MDHM                          = APRS_TIME_MDHM;
+APRS.TIME_ZULU                          = APRS_TIME_ZULU;
+APRS.TIME_LOCAL                         = APRS_TIME_LOCAL;
+APRS.TIME_ZULU_DHM                      = APRS_TIME_ZULU_DHM;
+APRS.TIME_ZULU_HMS                      = APRS_TIME_ZULU_HMS;
+APRS.TIME_ZULU_MDHM                     = APRS_TIME_ZULU_MDHM;
+APRS.TIME_LOCAL_DHM                     = APRS_TIME_LOCAL_DHM;
 
 APRS.DISTANCE_FEET                      = APRS_DISTANCE_FEET;
 APRS.DISTANCE_MILES                     = APRS_DISTANCE_MILES;
@@ -235,15 +241,34 @@ function APRS.Path.InitFromString(value)
 	return APRS.Path.InitFromHandle(handle, false, true);
 end
 
+-- @param type defaults to APRS.TIME_ZULU_HMS
 -- @return time
-function APRS.Time.Now()
-	local handle = aprs_time_now();
+function APRS.Time.Now(type)
+	if not type then
+		type = APRS.TIME_ZULU_HMS;
+	end
+
+	local handle = aprs_time_init(type);
 
 	if not handle then
 		return nil;
 	end
 
-	return APRS.Time.FromHandle(handle);
+	local time = APRS.Time.FromHandle(handle);
+
+	if not time then
+		aprs_time_deinit(handle);
+
+		return nil;
+	end
+
+	setmetatable(time, {
+		__gc = function(self)
+			aprs_time_deinit(self.Handle);
+		end
+	});
+
+	return time;
 end
 -- @return time
 function APRS.Time.FromHandle(handle)
@@ -254,8 +279,26 @@ function APRS.Time.FromHandle(handle)
 	local time  = {};
 	time.Handle = handle;
 
+	function time:IsDHM()
+		return aprs_time_is_dhm(self.Handle) and true or false;
+	end
+	function time:IsHMS()
+		return aprs_time_is_hms(self.Handle) and true or false;
+	end
+	function time:IsMDHM()
+		return aprs_time_is_mdhm(self.Handle) and true or false;
+	end
+	function time:IsZulu()
+		return aprs_time_is_zulu(self.Handle) and true or false;
+	end
+	function time:IsLocal()
+		return aprs_time_is_local(self.Handle) and true or false;
+	end
+
 	function time:GetType()
-		return aprs_time_get_type(self.Handle);
+		local result = aprs_time_get_type(self.Handle);
+
+		return tonumber(result);
 	end
 	-- @return day, hour, minute
 	function time:GetDHM()
@@ -282,6 +325,9 @@ function APRS.Time.FromHandle(handle)
 
 	return time;
 end
+function APRS.Time.TypeIsValid(value)
+	return aprs_time_type_is_valid(value) and true or false;
+end
 
 -- @param path can be string or path
 -- @return packet
@@ -299,9 +345,14 @@ function APRS.Packet.InitItem(sender, tocall, path, name, symbol_table, symbol_t
 	return APRS_Packet_Init(aprs_packet_item_init, false, true, sender, tocall, path, name, symbol_table, symbol_table_key);
 end
 -- @param path can be string or path
+-- @param time_type defaults to APRS.TIME_ZULU_HMS
 -- @return packet
-function APRS.Packet.InitObject(sender, tocall, path, name, symbol_table, symbol_table_key)
-	return APRS_Packet_Init(aprs_packet_object_init, false, true, sender, tocall, path, name, symbol_table, symbol_table_key);
+function APRS.Packet.InitObject(sender, tocall, path, name, symbol_table, symbol_table_key, time_type)
+	if not time_type then
+		time_type = APRS.TIME_ZULU_HMS;
+	end
+
+	return APRS_Packet_Init(aprs_packet_object_init, false, true, sender, tocall, path, name, symbol_table, symbol_table_key, time_type);
 end
 -- @param path can be string or path
 -- @return packet
@@ -334,9 +385,10 @@ function APRS.Packet.InitWeather(sender, tocall, path, type, software)
 	return APRS_Packet_Init(aprs_packet_weather_init, false, true, sender, tocall, path, type, software);
 end
 -- @param path can be string or path
+-- @param time_type is optional
 -- @return packet
-function APRS.Packet.InitPosition(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key)
-	return APRS_Packet_Init(aprs_packet_position_init, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key);
+function APRS.Packet.InitPosition(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key, time_type)
+	return APRS_Packet_Init(aprs_packet_position_init, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key, time_type or 0);
 end
 -- @param path can be string or path
 -- @return packet
@@ -344,9 +396,10 @@ function APRS.Packet.InitPositionMicE(sender, tocall, path, latitude, longitude,
 	return APRS_Packet_Init(aprs_packet_position_init_mic_e, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key, message);
 end
 -- @param path can be string or path
+-- @param time_type is optional
 -- @return packet
-function APRS.Packet.InitPositionCompressed(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key)
-	return APRS_Packet_Init(aprs_packet_position_init_compressed, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key);
+function APRS.Packet.InitPositionCompressed(sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key, time_type)
+	return APRS_Packet_Init(aprs_packet_position_init_compressed, false, true, sender, tocall, path, latitude, longitude, altitude, speed, course, comment, symbol_table, symbol_table_key, time_type or 0);
 end
 -- @param path can be string or path
 -- @return packet
