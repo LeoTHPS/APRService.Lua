@@ -433,7 +433,7 @@ bool                                                    lua_aprservice_command_f
 }
 void                                                    lua_aprservice_command_handler_detour(aprservice* service, aprservice_command* command, aprs_packet* packet, const char* sender, const char* name, const char* args, void* param)
 {
-	lua_aprservice_command_handler(lua, POINTER_TO_INT(param), false).Execute(command, packet, sender, name, args);
+	lua_aprservice_command_handler(lua, POINTER_TO_INT(param), false).Execute(command, packet, sender, name, args ? args : "");
 }
 aprservice_command*                                     lua_aprservice_command_register(aprservice* service, std::string_view name, const char* help, lua_aprservice_command_handler handler)
 {
