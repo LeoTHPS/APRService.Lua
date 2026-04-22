@@ -554,6 +554,7 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 		return task;
 	end
 
+	-- @param help is optional
 	-- @param handler(packet, sender, name, args)
 	-- @return command
 	function service:RegisterCommand(name, help, handler)
