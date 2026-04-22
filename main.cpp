@@ -429,7 +429,7 @@ lua_aprservice_task_handler                             lua_aprservice_task_get_
 
 bool                                                    lua_aprservice_command_filter_detour(aprservice* service, aprservice_command* command, aprs_packet* packet, const char* sender, const char* name, const char* args, void* param)
 {
-	return lua_aprservice_command_filter_handler(lua, POINTER_TO_INT(param), false).Execute(command, packet, sender, name, args);
+	return lua_aprservice_command_filter_handler(lua, POINTER_TO_INT(param), false).Execute(command, packet, sender, name, args ? args : "");
 }
 void                                                    lua_aprservice_command_handler_detour(aprservice* service, aprservice_command* command, aprs_packet* packet, const char* sender, const char* name, const char* args, void* param)
 {
