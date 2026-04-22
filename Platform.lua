@@ -213,9 +213,8 @@ elseif PLATFORM_LINUX then
 elseif PLATFORM_WIN32 then
 	Platform.Win32 = {};
 
-	-- @param async is optional
-	function Platform.Win32.PlaySound(file, async)
-		local result = Platform.ShellExec(string.format('powershell -c "(New-Object Media.SoundPlayer \'%s\').%s()"', file, async and 'Play' or 'PlaySync'));
+	function Platform.Win32.PlaySound(file)
+		local result = Platform.ShellExec(string.format('powershell -c "(New-Object Media.SoundPlayer \'%s\').Play()"', file));
 
 		return result ~= nil;
 	end
