@@ -555,7 +555,7 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 	end
 
 	-- @param help is optional
-	-- @param handler(packet, sender, name, args)
+	-- @param handler(command, packet, sender, name, args)
 	-- @return command
 	function service:RegisterCommand(name, help, handler)
 		local command_handle = aprservice_command_register(self.Handle, name, help, handler);
@@ -576,7 +576,7 @@ function APRService.Init(station, path, symbol_table, symbol_table_key)
 		function command:SetHelp(value)
 			aprservice_command_set_help(self.Handle, value);
 		end
-		-- @param handler(packet, sender, name, args)->boolean
+		-- @param handler(command, packet, sender, name, args)->boolean
 		function command:SetFilter(handler)
 			return aprservice_command_set_filter(self.Handle, handler) and true or false;
 		end

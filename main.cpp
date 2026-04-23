@@ -1,4 +1,4 @@
-#include <LuaCPP.hpp>
+#include <Luna.hpp>
 #include <APRService.hpp>
 
 #include <string>
@@ -16,7 +16,7 @@
 #define INT_TO_POINTER(value) ((void*)(uintptr_t)value)
 #define POINTER_TO_INT(value) ((int)(uintptr_t)value)
 
-LuaCPP lua;
+Luna luna;
 
 // station, is_repeated
 typedef std::tuple<const char*, bool>                                                                                                                                                                                                                        lua_aprs_path_node;
@@ -43,13 +43,13 @@ typedef std::tuple<float, float, float, float, float>                           
 typedef std::tuple<float, float, int32_t, uint16_t, uint16_t>                                                                                                                                                                                                lua_aprservice_position;
 
 // @return true to reschedule
-typedef LuaCPP::Function<bool(bool is_canceled, uint32_t seconds)>                                                                                                                                                                                           lua_aprservice_task_handler;
-typedef LuaCPP::Function<void(aprservice_event_information* event)>                                                                                                                                                                                          lua_aprservice_event_handler;
-typedef LuaCPP::Function<void(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)>                                                                                                      lua_aprservice_command_handler;
+typedef LunaFunction<bool(bool is_canceled, uint32_t seconds)>                                                                                                                                                                                               lua_aprservice_task_handler;
+typedef LunaFunction<void(aprservice_event_information* event)>                                                                                                                                                                                              lua_aprservice_event_handler;
+typedef LunaFunction<void(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)>                                                                                                          lua_aprservice_command_handler;
 // @return true to accept command
-typedef LuaCPP::Function<bool(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)>                                                                                                      lua_aprservice_command_filter_handler;
+typedef LunaFunction<bool(aprservice_command* command, aprs_packet* packet, std::string_view sender, std::string_view name, std::string_view args)>                                                                                                          lua_aprservice_command_filter_handler;
 
-typedef LuaCPP::Function<void(APRSERVICE_MESSAGE_ERRORS error)>                                                                                                                                                                                              lua_aprservice_message_callback;
+typedef LunaFunction<void(APRSERVICE_MESSAGE_ERRORS error)>                                                                                                                                                                                                  lua_aprservice_message_callback;
 
 // type
 typedef std::tuple<APRSERVICE_EVENTS>                                                                                                                                                                                                                        lua_aprservice_event_information_connect;
@@ -243,7 +243,7 @@ lua_aprservice_event_handler                            lua_aprservice_get_event
 	void*                        handler_param_c;
 
 	if (aprservice_get_event_handler(service, event, &handler_c, &handler_param_c) && handler_c)
-		handler = lua_aprservice_event_handler(lua, POINTER_TO_INT(handler_param_c), false);
+		handler = lua_aprservice_event_handler(luna, POINTER_TO_INT(handler_param_c), false);
 
 	return handler;
 }
@@ -254,14 +254,14 @@ lua_aprservice_event_handler                            lua_aprservice_get_defau
 	void*                        handler_param_c;
 
 	if (aprservice_get_default_event_handler(service, &handler_c, &handler_param_c), handler_c)
-		handler = lua_aprservice_event_handler(lua, POINTER_TO_INT(handler_param_c), false);
+		handler = lua_aprservice_event_handler(luna, POINTER_TO_INT(handler_param_c), false);
 
 	return handler;
 }
 
 void                                                    lua_aprservice_event_handler_detour(aprservice* service, aprservice_event_information* event, void* param)
 {
-	lua_aprservice_event_handler(lua, POINTER_TO_INT(param), false).Execute(event);
+	lua_aprservice_event_handler(luna, POINTER_TO_INT(param), false)(event);
 }
 bool                                                    lua_aprservice_set_event_handler(aprservice* service, APRSERVICE_EVENTS event, lua_aprservice_event_handler handler)
 {
@@ -270,34 +270,34 @@ bool                                                    lua_aprservice_set_event
 
 	aprservice_get_event_handler(service, event, &prev_handler, &prev_param);
 
-	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
 
-	if ((reference = luaL_ref(lua, LUA_REGISTRYINDEX)) == LUA_REFNIL)
+	if ((reference = luaL_ref(luna, LUA_REGISTRYINDEX)) == LUA_REFNIL)
 	{
-		lua_pop(lua, 1);
+		lua_pop(luna, 1);
 
 		return false;
 	}
 
 	if (!aprservice_set_event_handler(service, event, &lua_aprservice_event_handler_detour, INT_TO_POINTER(reference)))
 	{
-		luaL_unref(lua, LUA_REGISTRYINDEX, reference);
+		luaL_unref(luna, LUA_REGISTRYINDEX, reference);
 
 		return false;
 	}
 
 	if (prev_handler)
-		luaL_unref(lua, LUA_REGISTRYINDEX, POINTER_TO_INT(prev_param));
+		luaL_unref(luna, LUA_REGISTRYINDEX, POINTER_TO_INT(prev_param));
 
 	return true;
 }
 
 void                                                    lua_aprservice_default_event_handler_detour(aprservice* service, aprservice_event_information* event, void* param)
 {
-	lua_aprservice_event_handler(lua, POINTER_TO_INT(param), false).Execute(event);
+	lua_aprservice_event_handler(luna, POINTER_TO_INT(param), false)(event);
 }
 bool                                                    lua_aprservice_set_default_event_handler(aprservice* service, lua_aprservice_event_handler handler)
 {
@@ -306,14 +306,14 @@ bool                                                    lua_aprservice_set_defau
 
 	aprservice_get_default_event_handler(service, &prev_handler, &prev_param);
 
-	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
 
-	if ((reference = luaL_ref(lua, LUA_REGISTRYINDEX)) == LUA_REFNIL)
+	if ((reference = luaL_ref(luna, LUA_REGISTRYINDEX)) == LUA_REFNIL)
 	{
-		lua_pop(lua, 1);
+		lua_pop(luna, 1);
 
 		return false;
 	}
@@ -321,32 +321,32 @@ bool                                                    lua_aprservice_set_defau
 	aprservice_set_default_event_handler(service, &lua_aprservice_default_event_handler_detour, INT_TO_POINTER(reference));
 
 	if (prev_handler)
-		luaL_unref(lua, LUA_REGISTRYINDEX, POINTER_TO_INT(prev_param));
+		luaL_unref(luna, LUA_REGISTRYINDEX, POINTER_TO_INT(prev_param));
 
 	return true;
 }
 
 void                                                    lua_aprservice_message_callback_detour(aprservice* service, APRSERVICE_MESSAGE_ERRORS error, void* param)
 {
-	lua_aprservice_message_callback(lua, POINTER_TO_INT(param), true).Execute(error);
+	lua_aprservice_message_callback(luna, POINTER_TO_INT(param), true)(error);
 }
 bool                                                    lua_aprservice_send_message(aprservice* service, std::string_view destination, std::string_view content, uint32_t timeout, lua_aprservice_message_callback callback)
 {
-	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, callback.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, callback.GetReference()) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
 
-	if ((reference = luaL_ref(lua, LUA_REGISTRYINDEX)) == LUA_REFNIL)
+	if ((reference = luaL_ref(luna, LUA_REGISTRYINDEX)) == LUA_REFNIL)
 	{
-		lua_pop(lua, 1);
+		lua_pop(luna, 1);
 
 		return false;
 	}
 
 	if (!aprservice_send_message(service, destination.data(), content.data(), timeout, &lua_aprservice_message_callback_detour, INT_TO_POINTER(reference)))
 	{
-		luaL_unref(lua, LUA_REGISTRYINDEX, reference);
+		luaL_unref(luna, LUA_REGISTRYINDEX, reference);
 
 		return false;
 	}
@@ -355,21 +355,21 @@ bool                                                    lua_aprservice_send_mess
 }
 bool                                                    lua_aprservice_send_message_ex(aprservice* service, std::string_view destination, std::string_view content, const char* id, uint32_t timeout, lua_aprservice_message_callback callback)
 {
-	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, callback.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, callback.GetReference()) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
 
-	if ((reference = luaL_ref(lua, LUA_REGISTRYINDEX)) == LUA_REFNIL)
+	if ((reference = luaL_ref(luna, LUA_REGISTRYINDEX)) == LUA_REFNIL)
 	{
-		lua_pop(lua, 1);
+		lua_pop(luna, 1);
 
 		return false;
 	}
 
 	if (!aprservice_send_message_ex(service, destination.data(), content.data(), id, timeout, &lua_aprservice_message_callback_detour, INT_TO_POINTER(reference)))
 	{
-		luaL_unref(lua, LUA_REGISTRYINDEX, reference);
+		luaL_unref(luna, LUA_REGISTRYINDEX, reference);
 
 		return false;
 	}
@@ -379,19 +379,19 @@ bool                                                    lua_aprservice_send_mess
 
 void                                                    lua_aprservice_task_handler_detour(aprservice* service, aprservice_task_information* task, void* param)
 {
-	if (!(task->reschedule = lua_aprservice_task_handler(lua, POINTER_TO_INT(param), false).Execute(task->is_canceled, task->seconds)))
-		luaL_unref(lua, LUA_REGISTRYINDEX, POINTER_TO_INT(param));
+	if (!(task->reschedule = lua_aprservice_task_handler(luna, POINTER_TO_INT(param), false)(task->is_canceled, task->seconds)))
+		luaL_unref(luna, LUA_REGISTRYINDEX, POINTER_TO_INT(param));
 }
 aprservice_task*                                        lua_aprservice_task_schedule(aprservice* service, uint32_t seconds, lua_aprservice_task_handler handler)
 {
-	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
 		return nullptr;
 
 	int reference;
 
-	if ((reference = luaL_ref(lua, LUA_REGISTRYINDEX)) == LUA_REFNIL)
+	if ((reference = luaL_ref(luna, LUA_REGISTRYINDEX)) == LUA_REFNIL)
 	{
-		lua_pop(lua, 1);
+		lua_pop(luna, 1);
 
 		return nullptr;
 	}
@@ -400,7 +400,7 @@ aprservice_task*                                        lua_aprservice_task_sche
 
 	if (!(task = aprservice_task_schedule(service, seconds, &lua_aprservice_task_handler_detour, INT_TO_POINTER(reference))))
 	{
-		luaL_unref(lua, LUA_REGISTRYINDEX, reference);
+		luaL_unref(luna, LUA_REGISTRYINDEX, reference);
 
 		return nullptr;
 	}
@@ -415,7 +415,7 @@ void                                                    lua_aprservice_task_canc
 	aprservice_task_get_handler(task, &handler, &handler_param);
 	aprservice_task_cancel(task);
 
-	luaL_unref(lua, LUA_REGISTRYINDEX, POINTER_TO_INT(handler_param));
+	luaL_unref(luna, LUA_REGISTRYINDEX, POINTER_TO_INT(handler_param));
 }
 lua_aprservice_task_handler                             lua_aprservice_task_get_handler(aprservice_task* task)
 {
@@ -424,27 +424,27 @@ lua_aprservice_task_handler                             lua_aprservice_task_get_
 
 	aprservice_task_get_handler(task, &handler, &handler_param);
 
-	return lua_aprservice_task_handler(lua, POINTER_TO_INT(handler_param), false);
+	return lua_aprservice_task_handler(luna, POINTER_TO_INT(handler_param), false);
 }
 
 bool                                                    lua_aprservice_command_filter_detour(aprservice* service, aprservice_command* command, aprs_packet* packet, const char* sender, const char* name, const char* args, void* param)
 {
-	return lua_aprservice_command_filter_handler(lua, POINTER_TO_INT(param), false).Execute(command, packet, sender, name, args ? args : "");
+	return lua_aprservice_command_filter_handler(luna, POINTER_TO_INT(param), false)(command, packet, sender, name, args ? args : "");
 }
 void                                                    lua_aprservice_command_handler_detour(aprservice* service, aprservice_command* command, aprs_packet* packet, const char* sender, const char* name, const char* args, void* param)
 {
-	lua_aprservice_command_handler(lua, POINTER_TO_INT(param), false).Execute(command, packet, sender, name, args ? args : "");
+	lua_aprservice_command_handler(luna, POINTER_TO_INT(param), false)(command, packet, sender, name, args ? args : "");
 }
 aprservice_command*                                     lua_aprservice_command_register(aprservice* service, std::string_view name, const char* help, lua_aprservice_command_handler handler)
 {
-	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
 		return nullptr;
 
 	int reference;
 
-	if ((reference = luaL_ref(lua, LUA_REGISTRYINDEX)) == LUA_REFNIL)
+	if ((reference = luaL_ref(luna, LUA_REGISTRYINDEX)) == LUA_REFNIL)
 	{
-		lua_pop(lua, 1);
+		lua_pop(luna, 1);
 
 		return nullptr;
 	}
@@ -453,7 +453,7 @@ aprservice_command*                                     lua_aprservice_command_r
 
 	if (!(command = aprservice_command_register(service, name.data(), help, &lua_aprservice_command_handler_detour, INT_TO_POINTER(reference))))
 	{
-		luaL_unref(lua, LUA_REGISTRYINDEX, reference);
+		luaL_unref(luna, LUA_REGISTRYINDEX, reference);
 
 		return nullptr;
 	}
@@ -473,9 +473,9 @@ void                                                    lua_aprservice_command_u
 	aprservice_command_unregister(command);
 
 	if (filter)
-		luaL_unref(lua, LUA_REGISTRYINDEX, POINTER_TO_INT(filter_param));
+		luaL_unref(luna, LUA_REGISTRYINDEX, POINTER_TO_INT(filter_param));
 
-	luaL_unref(lua, LUA_REGISTRYINDEX, POINTER_TO_INT(handler_param));
+	luaL_unref(luna, LUA_REGISTRYINDEX, POINTER_TO_INT(handler_param));
 }
 lua_aprservice_command_filter_handler                   lua_aprservice_command_get_filter(aprservice_command* command)
 {
@@ -486,7 +486,7 @@ lua_aprservice_command_filter_handler                   lua_aprservice_command_g
 	aprservice_command_get_filter(command, &handler_c, &handler_param_c);
 
 	if (handler_c)
-		handler = lua_aprservice_command_filter_handler(lua, POINTER_TO_INT(handler_param_c), false);
+		handler = lua_aprservice_command_filter_handler(luna, POINTER_TO_INT(handler_param_c), false);
 
 	return handler;
 }
@@ -497,7 +497,7 @@ lua_aprservice_command_handler                          lua_aprservice_command_g
 
 	aprservice_command_get_handler(command, &handler, &handler_param);
 
-	return lua_aprservice_command_handler(lua, POINTER_TO_INT(handler_param), false);
+	return lua_aprservice_command_handler(luna, POINTER_TO_INT(handler_param), false);
 }
 bool                                                    lua_aprservice_command_set_filter(aprservice_command* command, lua_aprservice_command_filter_handler handler)
 {
@@ -506,14 +506,14 @@ bool                                                    lua_aprservice_command_s
 
 	aprservice_command_get_filter(command, &prev_handler, &prev_param);
 
-	if (lua_rawgeti(lua, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
 
-	if ((reference = luaL_ref(lua, LUA_REGISTRYINDEX)) == LUA_REFNIL)
+	if ((reference = luaL_ref(luna, LUA_REGISTRYINDEX)) == LUA_REFNIL)
 	{
-		lua_pop(lua, 1);
+		lua_pop(luna, 1);
 
 		return false;
 	}
@@ -521,7 +521,7 @@ bool                                                    lua_aprservice_command_s
 	aprservice_command_set_filter(command, &lua_aprservice_command_filter_detour, INT_TO_POINTER(reference));
 
 	if (prev_handler)
-		luaL_unref(lua, LUA_REGISTRYINDEX, POINTER_TO_INT(prev_param));
+		luaL_unref(luna, LUA_REGISTRYINDEX, POINTER_TO_INT(prev_param));
 
 	return true;
 }
@@ -611,7 +611,7 @@ void                                                    lua_platform_sleep(uint3
 }
 
 #define lua_register_global(value)          lua_register_global_ex(#value, value)
-#define lua_register_global_ex(name, value) lua.SetGlobal<value>(name)
+#define lua_register_global_ex(name, value) luna.SetGlobal(name, value)
 
 void lua_register_globals()
 {
@@ -1066,12 +1066,8 @@ bool main_execute_files(int argc, char* argv[])
 	for (int i = 1; i < argc; ++i)
 		try
 		{
-			if (!lua.RunFile(argv[i]))
-			{
-				std::cerr << "File not found: " << argv[i] << std::endl;
-
+			if (!luna.RunFile(argv[i]))
 				return false;
-			}
 		}
 		catch (const std::exception& e)
 		{
@@ -1101,7 +1097,8 @@ bool main_execute_stdin()
 	{
 		try
 		{
-			lua.Run(line);
+			if (!luna.Run(line.c_str()))
+				return false;
 		}
 		catch (const std::exception& e)
 		{
@@ -1116,9 +1113,9 @@ bool main_execute_stdin()
 
 int main(int argc, char* argv[])
 {
-	if (lua)
+	if (luna)
 	{
-		lua.LoadLibrary(LuaCPP::Libraries::All);
+		luna.LoadLibrary(~0);
 
 		lua_register_globals();
 		lua_register_globals_aprs();
