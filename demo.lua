@@ -53,7 +53,7 @@ local function OnReceivePacket(packet)
 	end
 end
 local function OnReceiveMessage(packet, id, sender, destination, content)
-	print('OnReceiveMessage', 'ID: '..id, 'Sender: '..sender, 'Destination: '..destination, 'Content: '..content);
+	print('OnReceiveMessage', 'ID: '..(id or ''), 'Sender: '..sender, 'Destination: '..destination, 'Content: '..content);
 end
 local function OnReceiveServerMessage(message)
 	print('OnReceiveServerMessage', 'Message: '..message);
