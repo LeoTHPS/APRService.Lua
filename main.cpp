@@ -270,7 +270,7 @@ bool                                                    lua_aprservice_set_event
 
 	aprservice_get_event_handler(service, event, &prev_handler, &prev_param);
 
-	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
@@ -306,7 +306,7 @@ bool                                                    lua_aprservice_set_defau
 
 	aprservice_get_default_event_handler(service, &prev_handler, &prev_param);
 
-	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
@@ -332,7 +332,7 @@ void                                                    lua_aprservice_message_c
 }
 bool                                                    lua_aprservice_send_message(aprservice* service, std::string_view destination, std::string_view content, uint32_t timeout, lua_aprservice_message_callback callback)
 {
-	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, callback.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, callback) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
@@ -355,7 +355,7 @@ bool                                                    lua_aprservice_send_mess
 }
 bool                                                    lua_aprservice_send_message_ex(aprservice* service, std::string_view destination, std::string_view content, const char* id, uint32_t timeout, lua_aprservice_message_callback callback)
 {
-	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, callback.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, callback) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
@@ -384,7 +384,7 @@ void                                                    lua_aprservice_task_hand
 }
 aprservice_task*                                        lua_aprservice_task_schedule(aprservice* service, uint32_t seconds, lua_aprservice_task_handler handler)
 {
-	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler) != LUA_TFUNCTION)
 		return nullptr;
 
 	int reference;
@@ -437,7 +437,7 @@ void                                                    lua_aprservice_command_h
 }
 aprservice_command*                                     lua_aprservice_command_register(aprservice* service, std::string_view name, const char* help, lua_aprservice_command_handler handler)
 {
-	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler) != LUA_TFUNCTION)
 		return nullptr;
 
 	int reference;
@@ -506,7 +506,7 @@ bool                                                    lua_aprservice_command_s
 
 	aprservice_command_get_filter(command, &prev_handler, &prev_param);
 
-	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler.GetReference()) != LUA_TFUNCTION)
+	if (lua_rawgeti(luna, LUA_REGISTRYINDEX, handler) != LUA_TFUNCTION)
 		return false;
 
 	int reference;
