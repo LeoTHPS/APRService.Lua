@@ -68,7 +68,7 @@ lua_aprs_path_node                                      lua_aprs_path_get_at(apr
 {
 	lua_aprs_path_node value(nullptr, false);
 
-	if (auto node = aprs_path_get_at(path, index))
+	if (auto node = aprs_path_get_at(path, index - 1))
 	{
 		std::get<0>(value) = node->station;
 		std::get<1>(value) = node->repeated;
